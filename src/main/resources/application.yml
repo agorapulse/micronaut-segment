@@ -1,0 +1,6 @@
+micronaut:
+    application:
+        name: segment
+segment:
+    apiKey: some-key
+    enabled: true

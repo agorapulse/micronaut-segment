@@ -1,0 +1,41 @@
+plugins {
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+}
+
+apply plugin:"groovy"
+apply plugin: "maven"
+
+version "0.1-SNAPSHOT"
+group "segment"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://jcenter.bintray.com" }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'io.micronaut:micronaut-bom:1.0.4'
+    }
+}
+
+dependencies {
+    compile "io.micronaut:micronaut-runtime-groovy"
+    compile "io.micronaut:micronaut-validation"
+    compile "com.segment.analytics.java:analytics:2.1.1"
+
+    compileOnly "io.micronaut:micronaut-inject-groovy"
+
+    runtime "ch.qos.logback:logback-classic:1.2.3"
+
+    testCompile("org.spockframework:spock-core") {
+        exclude group: "org.codehaus.groovy", module: "groovy-all"
+    }
+    testCompile "io.micronaut.test:micronaut-test-spock:1.0.2"
+    testCompile "io.micronaut:micronaut-inject-groovy"
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+}

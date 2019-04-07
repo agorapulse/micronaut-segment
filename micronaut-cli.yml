@@ -1,5 +1,5 @@
 profile: service
-defaultPackage: segment
+defaultPackage: com.agorapulse.micronaut.segment
 ---
 testFramework: spock
 sourceLanguage: groovy

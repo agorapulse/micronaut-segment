@@ -1,4 +1,4 @@
-package segment
+package com.agorapulse.micronaut.segment
 
 import io.micronaut.context.annotation.ConfigurationProperties
 

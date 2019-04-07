@@ -1,4 +1,4 @@
-package segment
+package com.agorapulse.micronaut.segment
 
 import com.segment.analytics.Analytics
 import com.segment.analytics.messages.*

@@ -20,7 +20,7 @@ Declare the lib dependency in the _build.gradle_ file, as shown here:
 ```groovy
 dependencies {
     ...
-    compile "agorapulse.libs:segment:0.1"
+    compile "com.agorapulse:micronaut-segment:0.1"
     ...
 }
 ```

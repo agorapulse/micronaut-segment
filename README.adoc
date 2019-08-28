@@ -1,0 +1,28 @@
+= Micronaut Segment
+
+Micronaut Segment helps you to integrate https://segment.com/[Segment] analysis tool into Micronaut application.
+
+== Instalation
+
+----
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'com.agorapulse:micronaut-snitch:0.1.0'
+}
+----
+
+== Configuration
+
+You need to configure your Segment API Key:
+
+----
+segment:
+    apiKey: theapikey
+----
+
+== Usage
+
+TODO

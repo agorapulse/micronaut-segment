@@ -6,11 +6,13 @@ Micronaut Segment helps you to integrate https://segment.com/[Segment] analysis 
 
 ----
 repositories {
-    jcenter()
+    maven {
+        url  "https://dl.bintray.com/agorapulse/libs"
+    }
 }
 
 dependencies {
-    compile 'com.agorapulse:micronaut-snitch:0.1.0'
+    compile 'com.agorapulse:micronaut-segment:0.1.0'
 }
 ----
 

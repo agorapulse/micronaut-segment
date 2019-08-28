@@ -4,16 +4,13 @@ import com.segment.analytics.Analytics
 import com.segment.analytics.messages.*
 import groovy.util.logging.Slf4j
 
-import javax.inject.Singleton
-
 @Slf4j
-@Singleton
-class SegmentService {
+class DefaultSegmentService implements SegmentService {
 
     private Analytics analytics
     private SegmentConfiguration config
 
-    SegmentService(Analytics analytics, SegmentConfiguration config) {
+    DefaultSegmentService(Analytics analytics, SegmentConfiguration config) {
         this.analytics = analytics
         this.config = config
     }
@@ -22,9 +19,7 @@ class SegmentService {
      * Flushes the current contents of the queue
      */
     void flush() {
-        if (config.enabled) {
-            analytics.flush()
-        }
+        analytics.flush()
     }
 
     /**
@@ -37,13 +32,11 @@ class SegmentService {
      * @param to
      *            new user id
      */
-    void alias(def from, def to) {
-        if (config.enabled) {
-            log.debug "Alias from=$from to=$to"
-            MessageBuilder builder = AliasMessage.builder(from)
-                    .userId(to.toString())
-            analytics.enqueue(builder)
-        }
+    void alias(String from, String to) {
+        log.debug "Alias from=$from to=$to"
+        MessageBuilder builder = AliasMessage.builder(from)
+                                             .userId(to.toString())
+        analytics.enqueue(builder)
     }
 
     /**
@@ -61,15 +54,13 @@ class SegmentService {
      *            an anonymous cookie id, or enable specific integrations.
      *
      */
-    void group(def userId, def groupId, Map traits = [:], Map options = [:]) {
-        if (config.enabled) {
-            log.debug "Group userId=$userId groupId=$groupId traits=$traits"
-            MessageBuilder builder = GroupMessage.builder(groupId.toString())
-                    .userId(userId.toString())
-                    .traits(traits)
-            addOptions(builder, options ?: config.options)
-            analytics.enqueue(builder)
-        }
+    void group(String userId, String groupId, Map<String, Object> traits, Map<String, Object> options) {
+        log.debug "Group userId=$userId groupId=$groupId traits=$traits"
+        MessageBuilder builder = GroupMessage.builder(groupId.toString())
+                                             .userId(userId.toString())
+                                             .traits(traits)
+        addOptions(builder, options ?: config.options)
+        analytics.enqueue(builder)
     }
 
     /**
@@ -93,15 +84,13 @@ class SegmentService {
      *            or enable specific integrations.
      *
      */
-    void identify(def userId, Map traits = [:], Date timestamp = null, Map options = [:]) {
-        if (config.enabled) {
-            log.debug "Identify userId=$userId traits=$traits timestamp=$timestamp options=$options"
-            MessageBuilder builder = IdentifyMessage.builder()
-                    .userId(userId.toString())
-                    .traits(traits)
-            addOptions(builder, options ?: config.options, timestamp)
-            analytics.enqueue(builder)
-        }
+    void identify(String userId, Map<String, Object> traits, Date timestamp, Map<String, Object> options) {
+        log.debug "Identify userId=$userId traits=$traits timestamp=$timestamp options=$options"
+        MessageBuilder builder = IdentifyMessage.builder()
+                                                .userId(userId.toString())
+                                                .traits(traits)
+        addOptions(builder, options ?: config.options, timestamp)
+        analytics.enqueue(builder)
     }
 
     /**
@@ -133,15 +122,13 @@ class SegmentService {
      *            cookie id, or enable specific integrations.
      *
      */
-    void page(def userId, String name, String category, Map properties = [:], Date timestamp = null, Map options = [:]) {
-        if (config.enabled) {
-            log.debug "Page userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
-            MessageBuilder builder = PageMessage.builder(name)
-                    .userId(userId.toString())
-                    .properties(properties + [category: category])
-            addOptions(builder, options ?: config.options, timestamp)
-            analytics.enqueue(builder)
-        }
+    void page(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
+        log.debug "Page userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
+        MessageBuilder builder = PageMessage.builder(name)
+                                            .userId(userId.toString())
+                                            .properties(properties + [category: category])
+        addOptions(builder, options ?: config.options, timestamp)
+        analytics.enqueue(builder)
     }
 
     /**
@@ -174,15 +161,13 @@ class SegmentService {
      *            cookie id, or enable specific integrations.
      *
      */
-    void screen(def userId, String name, String category, Map properties = [:], Date timestamp = null, Map options = [:]) {
-        if (config.enabled) {
-            log.debug "Screen userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
-            MessageBuilder builder = ScreenMessage.builder(name)
-                    .userId(userId.toString())
-                    .properties(properties + [category: category])
-            addOptions(builder, options ?: config.options, timestamp)
-            analytics.enqueue(builder)
-        }
+    void screen(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
+        log.debug "Screen userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
+        MessageBuilder builder = ScreenMessage.builder(name)
+                                              .userId(userId.toString())
+                                              .properties(properties + [category: category])
+        addOptions(builder, options ?: config.options, timestamp)
+        analytics.enqueue(builder)
     }
 
     /**
@@ -210,16 +195,13 @@ class SegmentService {
      *            or enable specific integrations.
      *
      */
-    void track(def userId, String event, Map properties = [:], Date timestamp = null, Map options = [:]) {
+    void track(String userId, String event, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
         log.debug "Tracking userId=$userId event=$event properties=$properties timestamp=$timestamp options=$options"
-        if (config.enabled) {
-            log.debug "Tracking userId=$userId event=$event properties=$properties timestamp=$timestamp options=$options"
-            MessageBuilder builder = TrackMessage.builder(event)
-                    .userId(userId.toString())
-                    .properties(properties)
-            addOptions(builder, options ?: config.options, timestamp)
-            analytics.enqueue(builder)
-        }
+        MessageBuilder builder = TrackMessage.builder(event)
+                                             .userId(userId.toString())
+                                             .properties(properties)
+        addOptions(builder, options ?: config.options, timestamp)
+        analytics.enqueue(builder)
     }
 
     // PRIVATE

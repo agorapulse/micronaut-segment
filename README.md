@@ -20,7 +20,7 @@ Declare the lib dependency in the _build.gradle_ file, as shown here:
 ```groovy
 dependencies {
     ...
-    compile "com.agorapulse:micronaut-segment:0.1"
+    compile "com.agorapulse:micronaut-segment:0.1.0"
     ...
 }
 ```
@@ -35,12 +35,6 @@ Add your Segment.io site _apiKey_  to your _grails-app/conf/application.yml_:
 ```yml
 segment:
     apiKey: {API_KEY} # Write key
-```
-By default, Segment integration will only be enabled for Production environments.  If you need it to be enabled for other environments, make sure that it is explicitly enabled in your configs.
-
-```yml
-segment:
-    enabled: true
 ```
 
 # Usage

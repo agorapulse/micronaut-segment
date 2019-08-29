@@ -1,14 +1,22 @@
 package com.agorapulse.micronaut.segment
 
 import com.segment.analytics.Analytics
-import com.segment.analytics.messages.*
+import com.segment.analytics.messages.AliasMessage
+import com.segment.analytics.messages.GroupMessage
+import com.segment.analytics.messages.IdentifyMessage
+import com.segment.analytics.messages.MessageBuilder
+import com.segment.analytics.messages.PageMessage
+import com.segment.analytics.messages.ScreenMessage
+import com.segment.analytics.messages.TrackMessage
+import groovy.transform.CompileDynamic
 import groovy.util.logging.Slf4j
 
 @Slf4j
+@CompileDynamic
 class DefaultSegmentService implements SegmentService {
 
-    private Analytics analytics
-    private SegmentConfiguration config
+    private final Analytics analytics
+    private final SegmentConfiguration config
 
     DefaultSegmentService(Analytics analytics, SegmentConfiguration config) {
         this.analytics = analytics
@@ -122,11 +130,12 @@ class DefaultSegmentService implements SegmentService {
      *            cookie id, or enable specific integrations.
      *
      */
+    @SuppressWarnings('ParameterCount')
     void page(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
         log.debug "Page userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
         MessageBuilder builder = PageMessage.builder(name)
                                             .userId(userId.toString())
-                                            .properties(properties + [category: category])
+                                            .properties([category: category] + properties)
         addOptions(builder, options ?: config.options, timestamp)
         analytics.enqueue(builder)
     }
@@ -161,11 +170,12 @@ class DefaultSegmentService implements SegmentService {
      *            cookie id, or enable specific integrations.
      *
      */
+    @SuppressWarnings('ParameterCount')
     void screen(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
         log.debug "Screen userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
         MessageBuilder builder = ScreenMessage.builder(name)
                                               .userId(userId.toString())
-                                              .properties(properties + [category: category])
+                                              .properties([category: category] + properties)
         addOptions(builder, options ?: config.options, timestamp)
         analytics.enqueue(builder)
     }
@@ -219,7 +229,7 @@ class DefaultSegmentService implements SegmentService {
             }
         }
         if (options.ip || options.language || options.userAgent || options.Intercom) {
-            Map context = [:]
+            Map<String, Object> context = [:]
             if (options.ip) {
                 context += [ip: options.ip]
             }

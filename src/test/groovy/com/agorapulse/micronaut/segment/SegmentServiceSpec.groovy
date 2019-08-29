@@ -1,10 +1,12 @@
 package com.agorapulse.micronaut.segment
 
 import com.segment.analytics.Analytics
+import groovy.transform.CompileDynamic
 import io.micronaut.context.ApplicationContext
 import spock.lang.AutoCleanup
 import spock.lang.Specification
 
+@CompileDynamic
 class SegmentServiceSpec extends Specification {
 
     private static final String API_KEY = 'some-api-key'

@@ -2,7 +2,7 @@ Segment Micronaut Lib
 =====================
 
 [![Build Status](https://travis-ci.org/agorapulse/micronaut-segment.png)](https://travis-ci.org/agorapulse/grails-segment)
-[![Download](https://api.bintray.com/packages/agorapulse/libs/segment/images/download.svg)](https://bintray.com/agorapulse/libs/segment/_latestVersion)
+[![Download](https://api.bintray.com/packages/agorapulse/libs/micronaut-segment/images/download.svg)](https://bintray.com/agorapulse/libs/segment/_latestVersion)
 
 # Introduction
 

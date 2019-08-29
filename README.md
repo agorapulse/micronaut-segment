@@ -41,90 +41,101 @@ segment:
 
 ## SegmentService
 
-You can inject _segmentService_ bean in any of your artefacts (controllers, services...) in order to call [Segment APIs](https://segment.com/docs/libraries/).
+You can inject _SegmentService_ into your beans in order to call [Segment APIs](https://segment.com/docs/libraries/).
 
 ```groovy
-SegmentService segmentService
+@Singleton
+class MyService {
 
-// Identify and set traits
-segmentService.identify('bob@bob.com', [gender: 'male'])
-
-// Identify and set traits with past date (JodaTime DateTime representing when the identify took place)
-segmentService.identify(
-    'bob@bob.com',
-    [gender: 'male'],
-    new DateTime(2012, 3, 26, 12, 0, 0, 0)
-)
-
-// Identify and set traits with past date and context
-segmentService.identify(
-    'bob@bob.com', [gender: 'male'],
-    new DateTime(2012, 3, 26, 12, 0, 0, 0),
-    [
-        integrations: [
-            'All': false,
-            'Mixpanel': true,
-            'KISSmetrics': true
-        ],
-        ip: '192.168.0.10'
-    ]
-)
-
-// Track an event
-segmentService.track('bob@bob.com', 'Signed up')
-
-// Track an event and set properties
-segmentService.track(
-    'bob@bob.com',
-    'Signed up',
-    [plan: 'Pro', amount: 99.95]
-)
-
-// Track a past event and set properties with past date
-segmentService.track(
-    'bob@bob.com', 'Signed up',
-    [plan: 'Pro', amount: 99.95],
-    new DateTime(2012, 3, 26, 12, 0, 0, 0)
-)
-
-// Track a past event and set properties with past date and context
-segmentService.track(
-    'bob@bob.com',
-    'Signed up',
-    [plan: 'Pro', amount: 99.95],
-    new DateTime(2012, 3, 26, 12, 0, 0, 0),
-    [
-        integrations: [
-            'All': false,
-            'Mixpanel': true,
-            'KISSmetrics': true
-        ],
-        ip: '192.168.0.10'
-    ]
-)
-
-// Group
-segmentService.group('bob@bob.com', 'companyId', [
-    name: 'The company name',
-    website: 'http://www.company.com'
-])
-
-// Record page view
-segmentService.page('bob@bob.com', 'Pricing')
-
-// Record page view with extra info
-segmentService.page('bob@bob.com', 'Pricing', 'Business', [
-    title: 'Segment.io Pricing',
-    path: '/pricing'
-])
-
-// Record screen view
-segmentService.screen('bob@bob.com', 'Register', 'Business', [
-    type: 'facebook'
-])
-
-// Alias identity
-segmentService.alias('bob@bob.com', 'bob')
+    private final SegmentService segmentService
+    
+    MyService(SegmentService segmentService) {
+        this.segmentService = segmentService
+    }
+    
+    void analyzeUsers() {
+    
+        // Identify and set traits
+        segmentService.identify('bob@bob.com', [gender: 'male'])
+        
+        // Identify and set traits with past date (JodaTime DateTime representing when the identify took place)
+        segmentService.identify(
+            'bob@bob.com',
+            [gender: 'male'],
+            new DateTime(2012, 3, 26, 12, 0, 0, 0)
+        )
+        
+        // Identify and set traits with past date and context
+        segmentService.identify(
+            'bob@bob.com', [gender: 'male'],
+            new DateTime(2012, 3, 26, 12, 0, 0, 0),
+            [
+                integrations: [
+                    'All': false,
+                    'Mixpanel': true,
+                    'KISSmetrics': true
+                ],
+                ip: '192.168.0.10'
+            ]
+        )
+        
+        // Track an event
+        segmentService.track('bob@bob.com', 'Signed up')
+        
+        // Track an event and set properties
+        segmentService.track(
+            'bob@bob.com',
+            'Signed up',
+            [plan: 'Pro', amount: 99.95]
+        )
+        
+        // Track a past event and set properties with past date
+        segmentService.track(
+            'bob@bob.com', 'Signed up',
+            [plan: 'Pro', amount: 99.95],
+            new DateTime(2012, 3, 26, 12, 0, 0, 0)
+        )
+        
+        // Track a past event and set properties with past date and context
+        segmentService.track(
+            'bob@bob.com',
+            'Signed up',
+            [plan: 'Pro', amount: 99.95],
+            new DateTime(2012, 3, 26, 12, 0, 0, 0),
+            [
+                integrations: [
+                    'All': false,
+                    'Mixpanel': true,
+                    'KISSmetrics': true
+                ],
+                ip: '192.168.0.10'
+            ]
+        )
+        
+        // Group
+        segmentService.group('bob@bob.com', 'companyId', [
+            name: 'The company name',
+            website: 'http://www.company.com'
+        ])
+        
+        // Record page view
+        segmentService.page('bob@bob.com', 'Pricing')
+        
+        // Record page view with extra info
+        segmentService.page('bob@bob.com', 'Pricing', 'Business', [
+            title: 'Segment.io Pricing',
+            path: '/pricing'
+        ])
+        
+        // Record screen view
+        segmentService.screen('bob@bob.com', 'Register', 'Business', [
+            type: 'facebook'
+        ])
+        
+        // Alias identity
+        segmentService.alias('bob@bob.com', 'bob')
+    }
+}
 ```
 
 # Bugs

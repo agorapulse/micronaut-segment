@@ -37,6 +37,8 @@ segment:
     apiKey: {API_KEY} # Write key
 ```
 
+You can skip the configuration in development environments. In that case the service calls won't do anything.
+
 # Usage
 
 ## SegmentService

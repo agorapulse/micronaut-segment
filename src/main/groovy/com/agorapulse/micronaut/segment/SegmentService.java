@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
-interface SegmentService {
+public interface SegmentService {
 
     /**
      * Flushes the current contents of the queue

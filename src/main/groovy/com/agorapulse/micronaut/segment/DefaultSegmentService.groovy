@@ -66,7 +66,7 @@ class DefaultSegmentService implements SegmentService {
         log.debug "Group userId=$userId groupId=$groupId traits=$traits"
         MessageBuilder builder = GroupMessage.builder(groupId.toString())
                                              .userId(userId.toString())
-                                             .traits(traits)
+                                             .traits(safe(traits))
         addOptions(builder, options ?: config.options)
         analytics.enqueue(builder)
     }
@@ -96,7 +96,7 @@ class DefaultSegmentService implements SegmentService {
         log.debug "Identify userId=$userId traits=$traits timestamp=$timestamp options=$options"
         MessageBuilder builder = IdentifyMessage.builder()
                                                 .userId(userId.toString())
-                                                .traits(traits)
+                                                .traits(safe(traits))
         addOptions(builder, options ?: config.options, timestamp)
         analytics.enqueue(builder)
     }
@@ -135,7 +135,7 @@ class DefaultSegmentService implements SegmentService {
         log.debug "Page userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
         MessageBuilder builder = PageMessage.builder(name)
                                             .userId(userId.toString())
-                                            .properties([category: category] + properties)
+                                            .properties(safe([category: category] + properties))
         addOptions(builder, options ?: config.options, timestamp)
         analytics.enqueue(builder)
     }
@@ -175,7 +175,7 @@ class DefaultSegmentService implements SegmentService {
         log.debug "Screen userId=$userId name=$name category=$category properties=$properties timestamp=$timestamp options=$options"
         MessageBuilder builder = ScreenMessage.builder(name)
                                               .userId(userId.toString())
-                                              .properties([category: category] + properties)
+                                              .properties(safe([category: category] + properties))
         addOptions(builder, options ?: config.options, timestamp)
         analytics.enqueue(builder)
     }
@@ -209,38 +209,43 @@ class DefaultSegmentService implements SegmentService {
         log.debug "Tracking userId=$userId event=$event properties=$properties timestamp=$timestamp options=$options"
         MessageBuilder builder = TrackMessage.builder(event)
                                              .userId(userId.toString())
-                                             .properties(properties)
+                                             .properties(safe(properties))
         addOptions(builder, options ?: config.options, timestamp)
         analytics.enqueue(builder)
     }
 
     // PRIVATE
 
+    private static <K, V> Map<K, V> safe(Map<K, V> original) {
+        return original.findAll { it.value }
+    }
+
     private static MessageBuilder addOptions(MessageBuilder builder, Map options, Date timestamp = null) {
+        Map safeOptions = safe options
         if (timestamp) {
             builder.timestamp(timestamp)
         }
-        if (options.anonymousId) {
-            builder.anonymousId(options.anonymousId as String)
+        if (safeOptions.anonymousId) {
+            builder.anonymousId(safeOptions.anonymousId as String)
         }
-        if (options.integrations) {
-            options.integrations.each { String key, Boolean enabled ->
+        if (safeOptions.integrations) {
+            safeOptions.integrations.each { String key, Boolean enabled ->
                 builder.enableIntegration(key, enabled)
             }
         }
-        if (options.ip || options.language || options.userAgent || options.Intercom) {
+        if (safeOptions.ip || safeOptions.language || safeOptions.userAgent || safeOptions.Intercom) {
             Map<String, Object> context = [:]
-            if (options.ip) {
-                context += [ip: options.ip]
+            if (safeOptions.ip) {
+                context += [ip: safeOptions.ip]
             }
-            if (options.language) {
-                context += [language: options.language]
+            if (safeOptions.language) {
+                context += [language: safeOptions.language]
             }
-            if (options.userAgent) {
-                context += [userAgent: options.userAgent]
+            if (safeOptions.userAgent) {
+                context += [userAgent: safeOptions.userAgent]
             }
-            if (options.Intercom) {
-                context += [Intercom: options.Intercom]
+            if (safeOptions.Intercom) {
+                context += [Intercom: safeOptions.Intercom]
             }
             builder.context(context)
         }

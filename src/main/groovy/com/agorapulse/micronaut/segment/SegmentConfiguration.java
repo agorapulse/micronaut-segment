@@ -1,12 +1,14 @@
 package com.agorapulse.micronaut.segment;
 
 import io.micronaut.context.annotation.ConfigurationProperties;
+import io.micronaut.context.annotation.Requires;
 
 import javax.validation.constraints.NotBlank;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ConfigurationProperties("segment")
+@Requires("segment.api-key")
 public class SegmentConfiguration {
 
     @NotBlank

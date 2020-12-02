@@ -32,8 +32,8 @@ public class SegmentFactory {
     @Singleton
     @Requires(missingBeans = {Analytics.class})
     public SegmentService noopSegmentService() {
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("Segment API key configuration 'segment.api-key' not found, using no-op service!");
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Segment API key configuration 'segment.api-key' not found, using no-op service!");
         }
         return new NoOpSegmentService();
     }

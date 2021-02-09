@@ -4,14 +4,15 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 import io.micronaut.context.annotation.Requires;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ConfigurationProperties("segment")
-@Requires("segment.api-key")
+@Requires(property = "segment.api-key")
 public class SegmentConfiguration {
 
-    @NotBlank
+    @NotBlank @NotNull
     private String apiKey;
 
     private Map<String, Object> options = new LinkedHashMap<>();

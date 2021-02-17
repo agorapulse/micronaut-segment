@@ -234,7 +234,7 @@ class DefaultSegmentService implements SegmentService {
     // PRIVATE
 
     private static <K, V> Map<K, V> safe(Map<K, V> original) {
-        return original.findAll { it.value }
+        return original.findAll { Map.Entry<K, V> e -> e.value }
     }
 
     private static MessageBuilder addOptions(MessageBuilder builder, Map options, Date timestamp = null) {
@@ -266,7 +266,7 @@ class DefaultSegmentService implements SegmentService {
             }
             builder.context(context)
         }
-        builder
+        return builder
     }
 
 }

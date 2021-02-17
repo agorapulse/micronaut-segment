@@ -1,110 +1,163 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2020-2021 Agorapulse.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 plugins {
-    id "io.spring.dependency-management" version "1.0.6.RELEASE"
-    id "groovy"
-    id "maven"
-    id "jacoco"
-    id "checkstyle"
-    id "codenarc"
-    id 'com.github.kt3k.coveralls' version '2.8.4'
-    id "maven-publish"
-    id "com.jfrog.bintray" version "1.8.4"
+    id 'org.kordamp.gradle.groovy-project'
+    id 'org.kordamp.gradle.bintray'
+    id 'org.kordamp.gradle.checkstyle'
+    id 'org.kordamp.gradle.codenarc'
+    id 'org.kordamp.gradle.coveralls'
 }
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url "https://jcenter.bintray.com" }
-}
+if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = '**UNDEFINED**'
+if (!project.hasProperty('bintrayApiKey'))   ext.bintrayApiKey   = '**UNDEFINED**'
 
-dependencyManagement {
-    imports {
-        mavenBom 'io.micronaut:micronaut-bom:1.2.10'
-    }
-}
+config {
+    release = (rootProject.findProperty('release') ?: false).toBoolean()
 
-dependencies {
-    annotationProcessor "io.micronaut:micronaut-inject-java"
+    info {
+        name        = 'Micronaut Segment'
+        vendor      = 'Agorapulse'
+        description = 'Micronaut integration for Segment'
 
-    compile "io.micronaut:micronaut-runtime-groovy"
-    compile "io.micronaut:micronaut-validation"
-    compile "com.segment.analytics.java:analytics:2.1.1"
+        links {
+            website      = "https://github.com/" + slug
+            issueTracker = "https://github.com/" + slug + "/issues"
+            scm          = "https://github.com/" + slug + ".git"
+        }
 
-    compileOnly "io.micronaut:micronaut-inject-groovy"
-
-    runtime "ch.qos.logback:logback-classic:1.2.3"
-
-    testCompile("org.spockframework:spock-core") {
-        exclude group: "org.codehaus.groovy", module: "groovy-all"
-    }
-    testCompile "io.micronaut.test:micronaut-test-spock:1.1.0"
-    testCompile "io.micronaut:micronaut-inject-groovy"
-    testCompile 'net.bytebuddy:byte-buddy:1.10.1'
-    testCompile 'org.objenesis:objenesis:3.0.1'
-}
-
-tasks.withType(GroovyCompile) {
-    groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
-}
-
-checkstyle {
-    toolVersion = '8.23'
-}
-
-codenarc {
-    toolVersion = '1.4'
-}
-
-// publishing
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives sourcesJar, javadocJar
-}
-
-publishing {
-    publications {
-        groovyMaven(MavenPublication) {
-            from components.java
-
-            artifact sourcesJar {
-                classifier "sources"
+        people {
+            person {
+                id    = 'musketyr'
+                name  = 'Vladimir Orany'
+                roles = ['developer']
             }
+        }
 
-            artifact javadocJar {
-                classifier "javadoc"
+        repositories {
+            repository {
+                name = 'localRelease'
+                url  = "" + project.rootProject.buildDir + "/repos/local/release"
+            }
+            repository {
+                name = 'localSnapshot'
+                url  = "" + project.rootProject.buildDir + "/repos/local/snapshot"
             }
         }
     }
-}
 
-// set bintrayUser & bintrayKey in gradle.properties
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['groovyMaven']
-    publish = true
-
-    final String projectName = project.name
-    final String projectDescription = project.description
-
-    pkg {
-        websiteUrl = 'https://github.com/agorapulse/micronaut-segmen'
-        issueTrackerUrl = 'https://github.com/agorapulse/micronaut-segment/issues'
-        vcsUrl = 'https://github.com/agorapulse/micronaut-segment.git'
-
-        repo = 'libs' // or your repo name
-        userOrg = 'agorapulse'
-        name = projectName       // somehow project.* doesn't work in this closure
-        desc = projectDescription
-        licenses = ['Apache-2.0']
+    licensing {
+        licenses {
+            license {
+                id = 'Apache-2.0'
+            }
+        }
     }
-    // dryRun = true // whether to run this as dry-run, without deploying
+
+    publishing {
+        signing             = false
+        releasesRepository  = 'localRelease'
+        snapshotsRepository = 'localSnapshot'
+    }
+
+    bintray {
+        credentials {
+            username = bintrayUsername
+            password = bintrayApiKey
+        }
+        // TODO: replace
+        userOrg    = 'agorapulse'
+        repo       = 'libs'
+        name       = 'micronaut-segment'
+        publish    = true
+    }
+
+    quality {
+        checkstyle {
+            toolVersion = '8.27'
+        }
+
+        codenarc {
+            toolVersion = '1.5'
+        }
+    }
+
+    coverage {
+        coveralls {
+            enabled = true
+        }
+    }
+
+    docs {
+        groovydoc {
+            aggregate {
+                enabled = false
+            }
+        }
+    }
+
 }
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url  "https://dl.bintray.com/agorapulse/libs" }
+        maven { url "https://repo.spring.io/release"  }
+    }
+
+    license {
+        exclude '**/*.json'
+        exclude '***.yml'
+    }
+}
+
+subprojects { subproject ->
+    if (subproject.name == 'guide') return
+
+    apply plugin: 'groovy'
+
+    dependencies {
+        // add your global dependencies
+    }
+
+    // useful for Micronaut
+    tasks.withType(GroovyCompile) {
+        groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+    }
+
+    // useful for Micronaut
+    tasks.withType(JavaCompile){
+        options.encoding = "UTF-8"
+        options.compilerArgs.add('-parameters')
+    }
+
+    // location independent tests (useful for stable CI builds)
+    tasks.withType(Test){
+        systemProperty 'user.timezone', 'UTC'
+        systemProperty 'user.language', 'en'
+    }
+
+    // useful for IntelliJ
+    task cleanOut(type: Delete) {
+        delete file('out')
+    }
+
+    clean.dependsOn cleanOut
+}
+
+check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')

@@ -27,6 +27,8 @@ import spock.lang.Specification
 class SegmentServiceSpec extends Specification {
 
     private static final String API_KEY = 'some-api-key'
+    private static final String USER_ID = 'user-id'
+    private static final String GOOGLE_ANALYTICS_ID = '123.456'
 
     @AutoCleanup
     ApplicationContext context
@@ -52,6 +54,13 @@ class SegmentServiceSpec extends Specification {
 
         then:
             1 * analytics.flush()
+    }
+
+    void 'send google analytics id'() {
+        when:
+            service.identify(USER_ID, [:], new Date(), [integrations: ['Google Analytics': GOOGLE_ANALYTICS_ID]])
+        then:
+            1 * analytics.enqueue(_)
     }
 
 }

@@ -242,6 +242,7 @@ class DefaultSegmentService implements SegmentService {
         return original.findAll { Map.Entry<K, V> e -> e.value }
     }
 
+    @SuppressWarnings('Instanceof')
     private static MessageBuilder addOptions(MessageBuilder builder, Map options, Date timestamp = null) {
         Map safeOptions = safe options
         if (timestamp) {
@@ -251,8 +252,12 @@ class DefaultSegmentService implements SegmentService {
             builder.anonymousId(safeOptions.anonymousId as String)
         }
         if (safeOptions.integrations) {
-            safeOptions.integrations.each { String key, Boolean enabled ->
-                builder.enableIntegration(key, enabled)
+            safeOptions.integrations.each { String key, Object payload ->
+                if (payload instanceof Boolean) {
+                    builder.enableIntegration(key, payload)
+                } else if (payload instanceof Map) {
+                    builder.integrationOptions(key, payload)
+                }
             }
         }
         if (safeOptions.ip || safeOptions.language || safeOptions.userAgent || safeOptions.Intercom) {

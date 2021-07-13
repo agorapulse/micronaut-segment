@@ -133,9 +133,9 @@ gradleProjects {
             dependencies {
                 annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
                 annotationProcessor "io.micronaut:micronaut-inject-java"
+                annotationProcessor "io.micronaut:micronaut-validation"
 
                 api platform("io.micronaut:micronaut-bom:$micronautVersion")
-                api "io.micronaut:micronaut-runtime-groovy"
                 api "io.micronaut:micronaut-validation"
 
                 compileOnly "io.micronaut:micronaut-inject-groovy"

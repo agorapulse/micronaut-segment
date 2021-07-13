@@ -50,5 +50,4 @@ public class SegmentConfiguration {
         this.options = options;
     }
 
-
 }

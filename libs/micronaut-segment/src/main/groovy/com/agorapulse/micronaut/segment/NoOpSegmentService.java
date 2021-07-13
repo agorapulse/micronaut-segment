@@ -17,10 +17,26 @@
  */
 package com.agorapulse.micronaut.segment;
 
+import com.segment.analytics.Analytics;
+import io.micronaut.context.annotation.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Singleton;
 import java.util.Date;
 import java.util.Map;
 
+@Singleton
+@Requires(missingBeans = {Analytics.class})
 public class NoOpSegmentService implements SegmentService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NoOpSegmentService.class);
+
+    public NoOpSegmentService() {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Segment API key configuration 'segment.api-key' not found, using no-op service!");
+        }
+    }
 
     @Override
     public void flush() {

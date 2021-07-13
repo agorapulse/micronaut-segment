@@ -1,0 +1,36 @@
+on:
+  schedule:
+    - cron: '30 0 * * *'
+jobs:
+  update-bom:
+    name: Updates Version and Opens PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch Segment Maven descriptor
+        run: curl https://repo1.maven.org/maven2/com/segment/analytics/java/analytics/maven-metadata.xml -o /tmp/maven-descriptor.xml
+      - name: Extract the latest version
+        uses: QwerMike/xpath-action@v1
+        id: xpath
+        with:
+          filename: '/tmp/maven-descriptor.xml'
+          expression: '/metadata/versioning/latest/text()'
+      - name: Upgrade Segment Version Number
+        run: |
+          sed -i 's/segmentLibrariesVersion.*/segmentLibrariesVersion = ${{ steps.xpath.outputs.result }}/' gradle.properties
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Upgraded to Segment Analytics ${{ steps.xpath.outputs.result }}
+          title: '[Upgrade] Upgraded to the Segment Analytics ${{ steps.xpath.outputs.result }}'
+          body: |
+            There is a newer version ${{ steps.xpath.outputs.result }} of Segment Analytics is available. The dependency has been updated.
+          labels: chore,upgrade
+          assignees: musketyr
+          branch: upgrade/segment-analytics
+      - name: Check outputs
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"

@@ -17,14 +17,17 @@
  */
 plugins {
     id 'org.kordamp.gradle.groovy-project'
-    id 'org.kordamp.gradle.bintray'
     id 'org.kordamp.gradle.checkstyle'
     id 'org.kordamp.gradle.codenarc'
     id 'org.kordamp.gradle.coveralls'
+    id 'io.github.gradle-nexus.publish-plugin'
 }
 
-if (!project.hasProperty('bintrayUsername')) ext.bintrayUsername = '**UNDEFINED**'
-if (!project.hasProperty('bintrayApiKey'))   ext.bintrayApiKey   = '**UNDEFINED**'
+if (!project.hasProperty('ossrhUsername'))      ext.ossrhUsername       = System.getenv('SONATYPE_USERNAME') ?: '**UNDEFINED**'
+if (!project.hasProperty('ossrhPassword'))      ext.ossrhPassword       = System.getenv('SONATYPE_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingPassword'))    ext.signingPassword     = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
+if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
 
 config {
     release = (rootProject.findProperty('release') ?: false).toBoolean()
@@ -69,21 +72,14 @@ config {
     }
 
     publishing {
-        signing             = false
+        signing {
+            enabled =  true
+            keyId = signingKeyId
+            secretKey = signingSecretKey
+            password = signingPassword
+        }
         releasesRepository  = 'localRelease'
         snapshotsRepository = 'localSnapshot'
-    }
-
-    bintray {
-        credentials {
-            username = bintrayUsername
-            password = bintrayApiKey
-        }
-        // TODO: replace
-        userOrg    = 'agorapulse'
-        repo       = 'libs'
-        name       = 'micronaut-segment'
-        publish    = true
     }
 
     quality {
@@ -112,12 +108,18 @@ config {
 
 }
 
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = ossrhUsername
+            password = ossrhPassword
+        }
+    }
+}
+
 allprojects {
     repositories {
-        jcenter()
         mavenCentral()
-        maven { url  "https://dl.bintray.com/agorapulse/libs" }
-        maven { url "https://repo.spring.io/release"  }
     }
 
     license {
@@ -125,39 +127,59 @@ allprojects {
         exclude '***.yml'
     }
 }
+gradleProjects {
+    subprojects {
+        dirs(['examples', 'libs']) {
+            dependencies {
+                annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
+                annotationProcessor "io.micronaut:micronaut-inject-java"
 
+                api platform("io.micronaut:micronaut-bom:$micronautVersion")
+                api "io.micronaut:micronaut-runtime-groovy"
+                api "io.micronaut:micronaut-validation"
+
+                compileOnly "io.micronaut:micronaut-inject-groovy"
+
+                testImplementation("org.spockframework:spock-core") {
+                    exclude group: "org.codehaus.groovy", module: "groovy-all"
+                }
+
+                testImplementation "io.micronaut.test:micronaut-test-spock"
+                testImplementation "io.micronaut:micronaut-inject-groovy"
+                testImplementation 'net.bytebuddy:byte-buddy:1.10.1'
+                testImplementation 'org.objenesis:objenesis:3.0.1'
+            }
+
+            // useful for Micronaut
+            tasks.withType(GroovyCompile) {
+                groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
+            }
+
+            // useful for Micronaut
+            tasks.withType(JavaCompile){
+                options.encoding = "UTF-8"
+                options.compilerArgs.add('-parameters')
+            }
+
+            // location independent tests (useful for stable CI builds)
+            tasks.withType(Test){
+                systemProperty 'user.timezone', 'UTC'
+                systemProperty 'user.language', 'en'
+            }
+
+            // useful for IntelliJ
+            task cleanOut(type: Delete) {
+                delete file('out')
+            }
+
+            clean.dependsOn cleanOut
+        }
+    }
+}
 subprojects { subproject ->
     if (subproject.name == 'guide') return
 
-    apply plugin: 'groovy'
 
-    dependencies {
-        // add your global dependencies
-    }
-
-    // useful for Micronaut
-    tasks.withType(GroovyCompile) {
-        groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
-    }
-
-    // useful for Micronaut
-    tasks.withType(JavaCompile){
-        options.encoding = "UTF-8"
-        options.compilerArgs.add('-parameters')
-    }
-
-    // location independent tests (useful for stable CI builds)
-    tasks.withType(Test){
-        systemProperty 'user.timezone', 'UTC'
-        systemProperty 'user.language', 'en'
-    }
-
-    // useful for IntelliJ
-    task cleanOut(type: Delete) {
-        delete file('out')
-    }
-
-    clean.dependsOn cleanOut
 }
 
 check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')

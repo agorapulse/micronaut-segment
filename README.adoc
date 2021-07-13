@@ -1,0 +1,13 @@
+= Micronaut Segment
+
+--
+image::https://img.shields.io/maven-central/v/com.agorapulse/micronaut-segment.svg?label=Maven%20Central[link="https://search.maven.org/search?q=g:%22com.agorapulse%22%20AND%20a:%22micronaut-segment%22",float="left"]
+image::https://github.com/agorapulse/micronaut-segment/workflows/Check/badge.svg["Build Status", link="https://github.com/agorapulse/micronaut-segment/actions?query=workflow%3ACheck"float="left"]
+image::https://coveralls.io/repos/github/agorapulse/micronaut-segment/badge.svg?branch=master[link=https://coveralls.io/github/agorapulse/micronaut-segment?branch=master",float="left"]
+--
+
+'''
+
+http://segment.com[Segment] integration for http://micronaut.io[Micronaut].
+
+See https://agorapulse.github.io/micronaut-segment[Full Documentation].

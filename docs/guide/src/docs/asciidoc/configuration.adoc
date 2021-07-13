@@ -1,0 +1,13 @@
+
+[[_configuration]]
+= Configuration
+
+You need to provide `segment.api-key` configuration property to send information to Segment.
+
+[source,yaml]
+----
+segment:
+    api-key: some-key
+----
+
+You can rely on `SegmentService` bean being always present but if the API key is missing then no-op implementation is provided.

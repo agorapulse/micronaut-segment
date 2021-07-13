@@ -1,0 +1,17 @@
+
+[[_installation_]]
+= Installation
+
+Micronaut Segment is available in the Maven Central repository.
+
+[source,groovy]
+----
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // load just simple implementation with POJO client and reflection based parser
+    implementation 'com.agorapulse:micronaut-segment:{project-version}'
+}
+----

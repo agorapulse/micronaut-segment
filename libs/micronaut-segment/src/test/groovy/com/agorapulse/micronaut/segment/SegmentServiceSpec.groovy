@@ -46,7 +46,7 @@ class SegmentServiceSpec extends Specification {
         service = context.getBean(SegmentService)
     }
 
-    void "Flush"() {
+    void "flush"() {
         when:
             service.flush()
 

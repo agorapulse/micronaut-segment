@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020-2021 Agorapulse.
+ * Copyright 2019-2021 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.micronaut.segment;
 
-import com.segment.analytics.Analytics;
-import io.micronaut.context.annotation.Bean;
-import io.micronaut.context.annotation.Factory;
-import io.micronaut.context.annotation.Requires;
-
-import javax.inject.Singleton;
-
-@Factory
-public class SegmentFactory {
-
-    @Bean
-    @Singleton
-    @Requires(beans = SegmentConfiguration.class)
-    public Analytics analytics(SegmentConfiguration configuration) {
-        return Analytics.builder(configuration.getApiKey()).build();
+config {
+    docs {
+        guide {
+            publish {
+                enabled = true
+            }
+        }
     }
+}
+
+configurations {
+    asciidoctorExtensions
+}
+
+dependencies {
+    asciidoctorExtensions 'com.bmuschko:asciidoctorj-tabbed-code-extension:0.3'
+}
+
+asciidoctor {
+    configurations 'asciidoctorExtensions'
+
+    baseDirFollowsSourceDir()
+
+    attributes = [
+        'gradle-version': project.gradle.gradleVersion,
+        'source-highlighter': 'prettify',
+        'root-dir': rootDir,
+        'project-slug': slug
+    ]
 
 }

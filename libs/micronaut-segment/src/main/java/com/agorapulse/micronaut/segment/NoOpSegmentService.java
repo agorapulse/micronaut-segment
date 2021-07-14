@@ -42,36 +42,36 @@ public class NoOpSegmentService implements SegmentService {
 
     @Override
     public void flush() {
-        // no-op
+        // noop
     }
 
     @Override
     public void alias(String from, String to, Consumer<SimpleMessageBuilder> builder) {
-        // no-op
+        // noop
     }
 
     @Override
     public void group(String userId, String groupId, Consumer<MessageBuilderWithTraits> builder) {
-        // no-op
+        // noop
     }
 
     @Override
     public void identify(String userId, Consumer<MessageBuilderWithTraits> builder) {
-        // no-op
+        // noop
     }
 
     @Override
     public void page(String userId, String name, Consumer<MessageBuilderWithProperties> builder) {
-        // no-op
+        // noop
     }
 
     @Override
     public void screen(String userId, String name, Consumer<MessageBuilderWithProperties> builder) {
-        // no-op
+        // noop
     }
 
     @Override
     public void track(String userId, String event, Consumer<MessageBuilderWithProperties> builder) {
-        // no-op
+        // noop
     }
 }

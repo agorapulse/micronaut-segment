@@ -17,22 +17,45 @@
  */
 package com.agorapulse.micronaut.segment
 
+import com.segment.analytics.Analytics
+import com.segment.analytics.messages.AliasMessage
 import groovy.transform.CompileDynamic
 import io.micronaut.context.ApplicationContext
+import spock.lang.AutoCleanup
 import spock.lang.Specification
 
 @CompileDynamic
 @SuppressWarnings('Instanceof')
 class SegmentFactorySpec extends Specification {
 
+    @AutoCleanup ApplicationContext context
+
     void 'no-op service is present by default'() {
-        expect:
-            ApplicationContext.run().getBean(SegmentService) instanceof NoOpSegmentService
+        when:
+            context = ApplicationContext.run()
+        then:
+            context.getBean(SegmentService) instanceof NoOpSegmentService
     }
 
+    @SuppressWarnings('GroovyAccessibility')
     void 'real service is present if api key is provided'() {
-        expect:
-            ApplicationContext.run('segment.api-key': 'anything').getBean(SegmentService) instanceof DefaultSegmentService
+        when:
+            context = ApplicationContext.run('example')
+            Analytics analytics = context.getBean(Analytics)
+            SegmentService service = context.getBean(SegmentService)
+            LastMessageHolder holder = context.getBean(LastMessageHolder)
+        then:
+            noExceptionThrown()
+
+            service instanceof DefaultSegmentService
+            !holder.lastMessage
+
+        when:
+            analytics.buildMessage(AliasMessage.builder('previous').userId('new'))
+
+        then:
+            holder.lastMessage
+            holder.lastMessage.context().FromTransformer == 'Value'
     }
 
 }

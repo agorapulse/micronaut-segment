@@ -98,7 +98,9 @@ class SegmentServiceSpec extends Specification {
 
     void 'alias user'() {
         when:
+            // tag::alias[]
             service.alias(PREVIOUS_ID, USER_ID)
+            // end::alias[]
         and:
             AliasMessage message = readMessage(AliasMessage)
         then:
@@ -166,6 +168,7 @@ class SegmentServiceSpec extends Specification {
 
     void 'identify with google analytics id'() {
         when:
+            // tag::identify[]
             service.identify(USER_ID) {
                 traits(
                     category: CATEGORY,
@@ -189,6 +192,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+            // end::identify[]
         and:
             IdentifyMessage message = readMessage(IdentifyMessage)
         then:
@@ -270,6 +274,7 @@ class SegmentServiceSpec extends Specification {
 
     void 'page with google analytics id'() {
         when:
+            // tag::page[]
             service.page(USER_ID, NAME) {
                 properties(
                     category: CATEGORY,
@@ -294,6 +299,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+            // end::page[]
         and:
             PageMessage message = readMessage(PageMessage)
         then:
@@ -376,6 +382,7 @@ class SegmentServiceSpec extends Specification {
 
     void 'screen with google analytics id'() {
         when:
+            // tag::screen[]
             service.screen(USER_ID, NAME) {
                 properties(
                     category: CATEGORY,
@@ -400,6 +407,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+            // end::screen[]
         and:
             ScreenMessage message = readMessage(ScreenMessage)
         then:
@@ -467,6 +475,7 @@ class SegmentServiceSpec extends Specification {
 
     void 'track with google analytics id'() {
         when:
+            // tag::track[]
             service.track(USER_ID, EVENT) {
                 properties(
                     category: CATEGORY,
@@ -491,6 +500,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+            // end::track[]
         and:
             TrackMessage message = readMessage(TrackMessage)
         then:
@@ -517,21 +527,43 @@ class SegmentServiceSpec extends Specification {
             message.groupId() == GROUP_ID
     }
 
-    void 'group with traits'() {
+    void 'group with google analytics id'() {
         when:
+            // tag::group[]
             service.group(USER_ID, GROUP_ID) {
                 traits(
                     category: CATEGORY,
+                    section : SECTION,
+                    nullable: null
+                )
+
+                timestamp INSTANT_NOW
+
+                anonymousId ANONYMOUS_ID
+
+                integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
+
+                enableIntegration 'Something Enabled', true
+                enableIntegration 'Something Disabled', false
+
+                context(
+                    ip: IP_ADDRESS,
+                    language: LANGUAGE,
+                    userAgent: USER_AGENT,
+                    Intercom: INTERCOM,
                     nullable: null
                 )
             }
+            // end::group[]
         and:
             GroupMessage message = readMessage(GroupMessage)
         then:
             message.userId() == USER_ID
             message.groupId() == GROUP_ID
 
-            assertCategory message.traits()
+            assertCategoryAndSection message.traits()
+            assertFullContext message
+            assertFullIntegrations message
     }
 
     void 'group with some null values'() {

@@ -18,11 +18,14 @@
 package com.agorapulse.micronaut.segment;
 
 import com.segment.analytics.Analytics;
+import com.segment.analytics.MessageInterceptor;
+import com.segment.analytics.MessageTransformer;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 
 import javax.inject.Singleton;
+import java.util.List;
 
 @Factory
 public class SegmentFactory {
@@ -30,8 +33,15 @@ public class SegmentFactory {
     @Bean
     @Singleton
     @Requires(beans = SegmentConfiguration.class)
-    public Analytics analytics(SegmentConfiguration configuration) {
-        return Analytics.builder(configuration.getApiKey()).build();
+    public Analytics analytics(
+        SegmentConfiguration configuration,
+        List<MessageInterceptor> messageInterceptor,
+        List<MessageTransformer> messageTransformers
+    ) {
+        Analytics.Builder builder = Analytics.builder(configuration.getApiKey());
+        messageInterceptor.forEach(builder::messageInterceptor);
+        messageTransformers.forEach(builder::messageTransformer);
+        return builder.build();
     }
 
 }

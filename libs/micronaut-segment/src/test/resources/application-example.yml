@@ -1,4 +1,4 @@
 segment:
-    api-key: some-key
-    options:
+    api-key: some-key                                                                   # <1>
+    options:                                                                            # <2>
       language: fr

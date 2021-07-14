@@ -2,12 +2,31 @@
 [[_usage]]
 = Usage
 
+== Segment Service
 
-== SegmentService
+You can inject `SegmentService` into your beans in order to call https://segment.com/docs/libraries/[Segment APIs].
+The bean is always present but no-op implementation is injected when the Segment API key is missing in the configuration.
 
-You can inject _SegmentService_ into your beans in order to call https://segment.com/docs/libraries/[Segment APIs].
+Contrary to the native `Analytics` builder methods, all the methods in the `SegmentService` accepts maps with `null` values
+or `null` values in general. `null` arguments are ignored and maps containing `null` values are cleaned up.
 
-[source,groovy]
+[source,java,role=primary]
+.Java
+----
+@Singleton
+public class MyService {
+
+    private final SegmentService segmentService;
+
+    public MyService(SegmentService segmentService) {
+        this.segmentService = segmentService;
+    }
+
+}
+----
+
+[source,groovy,role=secondary]
+.Groovy
 ----
 @Singleton
 class MyService {
@@ -18,88 +37,137 @@ class MyService {
         this.segmentService = segmentService
     }
 
-    void analyzeUsers() {
-
-        // Identify and set traits
-        segmentService.identify('bob@bob.com', [gender: 'male'])
-
-        // Identify and set traits with past date (JodaTime DateTime representing when the identify took place)
-        segmentService.identify(
-            'bob@bob.com',
-            [gender: 'male'],
-            new DateTime(2012, 3, 26, 12, 0, 0, 0)
-        )
-
-        // Identify and set traits with past date and context
-        segmentService.identify(
-            'bob@bob.com', [gender: 'male'],
-            new DateTime(2012, 3, 26, 12, 0, 0, 0),
-            [
-                integrations: [
-                    'All': false,
-                    'Mixpanel': true,
-                    'KISSmetrics': true
-                ],
-                ip: '192.168.0.10'
-            ]
-        )
-
-        // Track an event
-        segmentService.track('bob@bob.com', 'Signed up')
-
-        // Track an event and set properties
-        segmentService.track(
-            'bob@bob.com',
-            'Signed up',
-            [plan: 'Pro', amount: 99.95]
-        )
-
-        // Track a past event and set properties with past date
-        segmentService.track(
-            'bob@bob.com', 'Signed up',
-            [plan: 'Pro', amount: 99.95],
-            new DateTime(2012, 3, 26, 12, 0, 0, 0)
-        )
-
-        // Track a past event and set properties with past date and context
-        segmentService.track(
-            'bob@bob.com',
-            'Signed up',
-            [plan: 'Pro', amount: 99.95],
-            new DateTime(2012, 3, 26, 12, 0, 0, 0),
-            [
-                integrations: [
-                    'All': false,
-                    'Mixpanel': true,
-                    'KISSmetrics': true
-                ],
-                ip: '192.168.0.10'
-            ]
-        )
-
-        // Group
-        segmentService.group('bob@bob.com', 'companyId', [
-            name: 'The company name',
-            website: 'http://www.company.com'
-        ])
-
-        // Record page view
-        segmentService.page('bob@bob.com', 'Pricing')
-
-        // Record page view with extra info
-        segmentService.page('bob@bob.com', 'Pricing', 'Business', [
-            title: 'Segment.io Pricing',
-            path: '/pricing'
-        ])
-
-        // Record screen view
-        segmentService.screen('bob@bob.com', 'Register', 'Business', [
-            type: 'facebook'
-        ])
-
-        // Alias identity
-        segmentService.alias('bob@bob.com', 'bob')
-    }
 }
+----
+
+=== Creating Aliases
+
+You can alias existing user to another ID.
+
+See the https://segment.com/docs/connections/sources/catalog/libraries/server/java/#alias[documentation] for the further information.
+
+[source,java,role=primary]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceTest.java[tag=alias,indent=0]
+----
+
+[source,groovy,role=secondary]
+.Groovy
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceSpec.groovy[tag=alias,indent=0]
+----
+
+=== Group Association
+
+You can associate a user with a group, including advanced properties.
+
+See the https://segment.com/docs/connections/sources/catalog/libraries/server/java/#group[documentation] for the further information.
+
+[source,java,role=primary]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceTest.java[tag=group,indent=0]
+----
+
+[source,groovy,role=secondary]
+.Groovy
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceSpec.groovy[tag=group,indent=0]
+----
+
+=== Identification
+
+You can identify users with their traits.
+
+See the https://segment.com/docs/connections/sources/catalog/libraries/server/java/#identify[documentation] for the further information.
+
+[source,java,role=primary]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceTest.java[tag=identify,indent=0]
+----
+
+[source,groovy,role=secondary]
+.Groovy
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceSpec.groovy[tag=identify,indent=0]
+----
+
+=== Page Views
+
+You can record page view by the user with additional properties.
+
+See the https://segment.com/docs/connections/sources/catalog/libraries/server/java/#page[documentation] for the further information.
+
+[source,java,role=primary]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceTest.java[tag=page,indent=0]
+----
+
+[source,groovy,role=secondary]
+.Groovy
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceSpec.groovy[tag=page,indent=0]
+----
+
+=== Screen Views
+
+You can record screen view by the user with additional properties.
+
+See the https://segment.com/docs/connections/sources/catalog/libraries/server/java/#screen[documentation] for the further information.
+
+[source,java,role=primary]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceTest.java[tag=screen,indent=0]
+----
+
+[source,groovy,role=secondary]
+.Groovy
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceSpec.groovy[tag=screen,indent=0]
+----
+=== Tracking Events
+
+You can track user events with additional properties.
+
+See the https://segment.com/docs/connections/sources/catalog/libraries/server/java/#track[documentation] for the further information.
+
+[source,java,role=primary]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceTest.java[tag=track,indent=0]
+----
+
+[source,groovy,role=secondary]
+.Groovy
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/SegmentServiceSpec.groovy[tag=track,indent=0]
+----
+
+== Customization
+
+You can declare message transformers and interceptors. They are only taken into account when the real
+implementation is used. They are ignored when no-op implementation is used.
+
+=== Message Transformation
+
+You can declare `MessageTransformer` beans to change the payload before sending. Here is the example of transformer which adds default value if not present:
+
+[source,java]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/DefaultContextMessageTransformer.java[tag=body]
+----
+
+=== Message Interceptors
+
+You can declare `MessageInterceptor` beans to intercept sending of the messages. Here is an example of the interceptor which holds the latest message sent:
+[source,java]
+.Java
+----
+include::{root-dir}/libs/micronaut-segment/src/test/groovy/com/agorapulse/micronaut/segment/LastMessageHolder.java[tag=body]
 ----
 

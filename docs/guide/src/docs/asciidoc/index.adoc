@@ -25,6 +25,3 @@ To report any bug, please, use the project http://github.com/agorapulse/micronau
 = Links
 
 link:api/index.html[Javadoc, window="_blank"]
-
-link:api-html/index.html[Source, window="_blank"]
-

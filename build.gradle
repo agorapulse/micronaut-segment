@@ -104,6 +104,9 @@ config {
                 enabled = false
             }
         }
+        sourceHtml {
+            enabled = false
+        }
     }
 
 }

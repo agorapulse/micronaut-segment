@@ -6,8 +6,9 @@ You need to provide `segment.api-key` configuration property to send information
 
 [source,yaml]
 ----
-segment:
-    api-key: some-key
+include::{root-dir}/libs/micronaut-segment/src/test/resources/application-example.yml[]
 ----
+<1> Segment API key is required if you want to send records to Segment but can be ignored in the development environment
+<2> The legacy default options `id`, `language`, `user-agent` or `intercom`, use <<Message Transformation>> instead
 
 You can rely on `SegmentService` bean being always present but if the API key is missing then no-op implementation is provided.

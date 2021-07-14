@@ -22,10 +22,7 @@ import com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties;
 import com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits;
 import com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public interface SegmentService {
@@ -468,7 +465,14 @@ public interface SegmentService {
 
     class LegacySupport {
 
-        private static final List<String> SUPPORTED_CONTEXT_OPTIONS = Arrays.asList("ip", "language", "userAgent", "Intercom");
+        private static final Map<String, List<String>> SUPPORTED_CONTEXT_OPTIONS = new HashMap<>();
+
+        static {
+            SUPPORTED_CONTEXT_OPTIONS.put("ip", Collections.singletonList("ip"));
+            SUPPORTED_CONTEXT_OPTIONS.put("language", Collections.singletonList("language"));
+            SUPPORTED_CONTEXT_OPTIONS.put("userAgent", Arrays.asList("userAgent", "user-agent"));
+            SUPPORTED_CONTEXT_OPTIONS.put("Intercom", Arrays.asList("Intercom", "intercom"));
+        }
 
         private LegacySupport() { }
 
@@ -505,11 +509,11 @@ public interface SegmentService {
                 }
             }
 
-            SUPPORTED_CONTEXT_OPTIONS.forEach(option -> {
-                if (options.containsKey(option)) {
-                    builder.context(option, options.get(option));
+            SUPPORTED_CONTEXT_OPTIONS.forEach((option, variants) -> variants.forEach(variant -> {
+                if (options.containsKey(variant)) {
+                    builder.context(option, options.get(variant));
                 }
-            });
+            }));
 
             return builder;
         }

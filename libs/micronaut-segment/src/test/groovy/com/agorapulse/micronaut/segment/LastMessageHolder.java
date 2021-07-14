@@ -15,39 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'org.kordamp.gradle.guide'
-    id 'org.ajoberstar.git-publish'
-}
+package com.agorapulse.micronaut.segment;
 
-config {
-    docs {
-        guide {
-            publish {
-                enabled = true
-            }
-        }
+// tag::body[]
+import com.segment.analytics.MessageInterceptor;
+import com.segment.analytics.messages.Message;
+
+import javax.inject.Singleton;
+
+/**
+ * Keeps the reference to the last message.
+ */
+@Singleton
+public class LastMessageHolder implements MessageInterceptor {
+
+    private Message lastMessage;
+
+    public Message getLastMessage() {
+        return lastMessage;
     }
-}
 
-configurations {
-    asciidoctorExtensions
-}
-
-dependencies {
-    asciidoctorExtensions 'com.bmuschko:asciidoctorj-tabbed-code-extension:0.3'
-}
-
-asciidoctor {
-    configurations 'asciidoctorExtensions'
-
-    baseDirFollowsSourceDir()
-
-    attributes = [
-        'gradle-version': project.gradle.gradleVersion,
-        'source-highlighter': 'prettify',
-        'root-dir': rootDir,
-        'project-slug': slug
-    ]
+    @Override
+    public Message intercept(Message message) {
+        this.lastMessage = message;
+        return message;
+    }
 
 }
+// end::body[]

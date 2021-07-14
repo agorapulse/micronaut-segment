@@ -4,14 +4,18 @@
 
 Micronaut Segment is available in the Maven Central repository.
 
-[source,groovy]
+[source,indent=0,role="primary",subs='verbatim,attributes']
+.Gradle
 ----
-repositories {
-    mavenCentral()
-}
+api 'com.agorapulse:micronaut-segment:{project-version}'
+----
 
-dependencies {
-    // load just simple implementation with POJO client and reflection based parser
-    implementation 'com.agorapulse:micronaut-segment:{project-version}'
-}
+[source,xml,indent=0,role="secondary",subs='verbatim,attributes']
+.Maven
+----
+<dependency>
+    <groupId>com.agorapulse</groupId>
+    <artifactId>micronaut-segment</artifactId>
+    <version>{project-version}</version>
+</dependency>
 ----

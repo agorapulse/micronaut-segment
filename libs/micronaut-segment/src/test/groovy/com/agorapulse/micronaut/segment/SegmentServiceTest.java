@@ -66,6 +66,7 @@ class SegmentServiceTest {
     private static final String SECTION = "Header";
     private static final String EVENT = "USER_LOGGED_IN";
     private static final String DEFAULT_LANGUAGE = "sk";
+    private static final String DEFAULT_USER_AGENT = "Safari";
 
 
     private static ApplicationContext context;
@@ -88,6 +89,7 @@ class SegmentServiceTest {
         Map<String, Object> properties = new HashMap<>();
         properties.put("segment.api-key", API_KEY);
         properties.put("segment.options.language", DEFAULT_LANGUAGE);
+        properties.put("segment.options.user-agent", DEFAULT_USER_AGENT);
 
         context = ApplicationContext.build(properties).build();
         context.registerSingleton(Analytics.class, analytics);
@@ -116,7 +118,9 @@ class SegmentServiceTest {
 
     @Test
     void alias_user() {
+        // tag::alias[]
         service.alias(PREVIOUS_ID, USER_ID);
+        // end::alias[]
 
         AliasMessage message = assertMessage(AliasMessage.class);
 
@@ -194,6 +198,7 @@ class SegmentServiceTest {
     void identify_with_google_analytics_id() {
         Instant now = Instant.now();
 
+        // tag::identify[]
         service.identify(USER_ID, b -> b
             .traits("category", CATEGORY)
             .traits("nullable", null)
@@ -209,6 +214,7 @@ class SegmentServiceTest {
             .context("Intercom", INTERCOM)
             .context("nullable", null)
         );
+        // end::identify[]
 
         IdentifyMessage message = assertMessage(IdentifyMessage.class);
 
@@ -295,6 +301,7 @@ class SegmentServiceTest {
     void page_with_google_analytics_id() {
         Instant now = Instant.now();
 
+        // tag::page[]
         service.page(USER_ID, NAME, b -> b
             .properties("category", CATEGORY)
             .properties("section", SECTION)
@@ -311,6 +318,7 @@ class SegmentServiceTest {
             .context("Intercom", INTERCOM)
             .context("nullable", null)
         );
+        // end::page[]
 
         PageMessage message = assertMessage(PageMessage.class);
 
@@ -397,6 +405,7 @@ class SegmentServiceTest {
     void screen_with_google_analytics_id() {
         Instant now = Instant.now();
 
+        // tag::screen[]
         service.screen(USER_ID, NAME, b -> b
             .properties("category", CATEGORY)
             .properties("section", SECTION)
@@ -413,6 +422,7 @@ class SegmentServiceTest {
             .context("Intercom", INTERCOM)
             .context("nullable", null)
         );
+        // end::screen[]
 
         ScreenMessage message = assertMessage(ScreenMessage.class);
 
@@ -484,6 +494,7 @@ class SegmentServiceTest {
     void track_with_google_analytics_id() {
         Instant now = Instant.now();
 
+        // tag::track[]
         service.track(USER_ID, EVENT, b -> b
             .properties("category", CATEGORY)
             .properties("section", SECTION)
@@ -500,6 +511,7 @@ class SegmentServiceTest {
             .context("Intercom", INTERCOM)
             .context("nullable", null)
         );
+        // end::track[]
 
         TrackMessage message = assertMessage(TrackMessage.class);
 
@@ -571,6 +583,7 @@ class SegmentServiceTest {
     void group_with_google_analytics_id() {
         Instant now = Instant.now();
 
+        // tag::group[]
         service.group(USER_ID, GROUP_ID, b -> b
             .traits("category", CATEGORY)
             .traits("section", SECTION)
@@ -587,6 +600,7 @@ class SegmentServiceTest {
             .context("Intercom", INTERCOM)
             .context("nullable", null)
         );
+        // end::group[]
 
         GroupMessage message = assertMessage(GroupMessage.class);
 
@@ -627,6 +641,7 @@ class SegmentServiceTest {
         Map<String, ?> context = message.context();
         assertNotNull(context);
         assertEquals(DEFAULT_LANGUAGE, context.get("language"));
+        assertEquals(DEFAULT_USER_AGENT, context.get("userAgent"));
     }
 
     private void assertFullContext(Message message) {

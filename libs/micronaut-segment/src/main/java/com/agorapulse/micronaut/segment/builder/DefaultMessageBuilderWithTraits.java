@@ -30,6 +30,9 @@ public class DefaultMessageBuilderWithTraits extends DefaultMessageBuilder<Messa
 
     @Override
     public MessageBuilderWithTraits traits(String key, Object value) {
+        if (value == null) {
+            return self();
+        }
         traits.put(key, value);
         return self();
     }

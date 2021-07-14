@@ -47,6 +47,9 @@ public abstract class DefaultMessageBuilder<V extends MessageBuilder<V>> impleme
 
     @Override
     public V context(String key, Object value) {
+        if (value == null) {
+            return self();
+        }
         this.context.put(key, value);
         return self();
     }
@@ -73,11 +76,6 @@ public abstract class DefaultMessageBuilder<V extends MessageBuilder<V>> impleme
     public V integrationOptions(String key, Map<String, ?> options) {
         integrationsOptions.put(key, SafeMap.safe(options));
         return self();
-    }
-
-    @Override
-    public V integrationOptions(String key, String optionKey, Object optionValue) {
-        return null;
     }
 
     @Override

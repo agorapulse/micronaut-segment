@@ -115,7 +115,7 @@ class SegmentServiceSpec extends Specification {
             aliasMessage.previousId() == PREVIOUS_ID
     }
 
-    void 'alias user with tiemstamp'() {
+    void 'alias user with timestamp'() {
         given:
             Instant now = Instant.now()
 

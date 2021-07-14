@@ -31,6 +31,9 @@ public class DefaultMessageBuilderWithProperties extends DefaultMessageBuilder<M
 
     @Override
     public MessageBuilderWithProperties properties(String key, Object value) {
+        if (value == null) {
+            return self();
+        }
         properties.put(key, value);
         return self();
     }

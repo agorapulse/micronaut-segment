@@ -17,17 +17,13 @@
  */
 package com.agorapulse.micronaut.segment;
 
-import com.agorapulse.micronaut.segment.builder.DefaultMessageBuilderWithProperties;
-import com.agorapulse.micronaut.segment.builder.DefaultMessageBuilderWithTraits;
-import com.agorapulse.micronaut.segment.builder.DefaultSimpleMessageBuilder;
-import com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties;
-import com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits;
-import com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder;
+import com.agorapulse.micronaut.segment.builder.*;
 import com.segment.analytics.Analytics;
 import io.micronaut.context.annotation.Requires;
 
 import javax.inject.Singleton;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Singleton
 @Requires(beans = com.segment.analytics.Analytics.class)
@@ -49,50 +45,40 @@ public class DefaultSegmentService implements SegmentService {
 
     @Override
     public void alias(String from, String to, Consumer<SimpleMessageBuilder> builder) {
-        DefaultSimpleMessageBuilder b = new DefaultSimpleMessageBuilder();
-        b.userId(to);
-        builder.accept(b);
-        analytics.enqueue(b.buildAliasMessage(from));
+        analytics.enqueue(builder(to, DefaultSimpleMessageBuilder::new, builder).buildAliasMessage(from));
     }
 
     @Override
     public void group(String userId, String groupId, Consumer<MessageBuilderWithTraits> builder) {
-        analytics.enqueue(traitsBuilder(userId, builder).buildGroupMessage(groupId));
+        analytics.enqueue(builder(userId, DefaultMessageBuilderWithTraits::new, builder).buildGroupMessage(groupId));
     }
 
     @Override
     public void identify(String userId, Consumer<MessageBuilderWithTraits> builder) {
-        analytics.enqueue(traitsBuilder(userId, builder).buildIdentifyMessage());
+        analytics.enqueue(builder(userId, DefaultMessageBuilderWithTraits::new, builder).buildIdentifyMessage());
     }
 
     @Override
     public void page(String userId, String name, Consumer<MessageBuilderWithProperties> builder) {
-        analytics.enqueue(propertiesBuilder(userId, builder).buildPageMessage(name));
+        analytics.enqueue(builder(userId, DefaultMessageBuilderWithProperties::new, builder).buildPageMessage(name));
     }
 
     @Override
     public void screen(String userId, String name, Consumer<MessageBuilderWithProperties> builder) {
-        analytics.enqueue(propertiesBuilder(userId, builder).buildScreenMessage(name));
+        analytics.enqueue(builder(userId, DefaultMessageBuilderWithProperties::new, builder).buildScreenMessage(name));
     }
 
     @Override
     public void track(String userId, String event, Consumer<MessageBuilderWithProperties> builder) {
-        analytics.enqueue(propertiesBuilder(userId, builder).buildTrackMessage(event));
+        analytics.enqueue(builder(userId, DefaultMessageBuilderWithProperties::new, builder).buildTrackMessage(event));
     }
 
-    private DefaultMessageBuilderWithProperties propertiesBuilder(String userId, Consumer<MessageBuilderWithProperties> builder) {
-        DefaultMessageBuilderWithProperties b = new DefaultMessageBuilderWithProperties();
+    private <B extends MessageBuilder<?>> B builder(String userId, Supplier<B> creator, Consumer<? super B> builder) {
+        B b = creator.get();
         b.userId(userId);
         if (!config.getOptions().isEmpty()) {
-            SegmentService.addOptions(b, config.getOptions(), null);
+            SegmentService.LegacySupport.addOptions(b, config.getOptions(), null);
         }
-        builder.accept(b);
-        return b;
-    }
-
-    private DefaultMessageBuilderWithTraits traitsBuilder(String userId, Consumer<MessageBuilderWithTraits> builder) {
-        DefaultMessageBuilderWithTraits b = new DefaultMessageBuilderWithTraits();
-        b.userId(userId);
         builder.accept(b);
         return b;
     }

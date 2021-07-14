@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 
 public interface SegmentService {
 
+
     /**
      * Flushes the current contents of the queue
      */
@@ -108,7 +109,7 @@ public interface SegmentService {
     default void group(String userId, String groupId, Map<String, ?> traits, Map<String, ?> options) {
         group(userId, groupId, b -> {
             b.traits(traits);
-            addOptions(b, options, null);
+            LegacySupport.addOptions(b, options, null);
         });
     }
 
@@ -179,7 +180,7 @@ public interface SegmentService {
     default void identify(String userId, Map<String, ?> traits, Date timestamp, Map<String, ?> options) {
         identify(userId, b -> {
             b.traits(traits);
-            addOptions(b, options, timestamp);
+            LegacySupport.addOptions(b, options, timestamp);
         });
     }
 
@@ -278,7 +279,7 @@ public interface SegmentService {
     default void page(String userId, String name, String category, Map<String, ?> properties, Date timestamp, Map<String, ?> options) {
         page(userId, name, b -> {
             b.properties("category", category).properties(properties);
-            addOptions(b, options, timestamp);
+            LegacySupport.addOptions(b, options, timestamp);
         });
     }
 
@@ -381,7 +382,7 @@ public interface SegmentService {
     default void screen(String userId, String name, String category, Map<String, ?> properties, Date timestamp, Map<String, ?> options) {
         screen(userId, name, b -> {
             b.properties("category", category).properties(properties);
-            addOptions(b, options, timestamp);
+            LegacySupport.addOptions(b, options, timestamp);
         });
     }
 
@@ -461,51 +462,56 @@ public interface SegmentService {
     default void track(String userId, String event, Map<String, ?> properties, Date timestamp, Map<String, ?> options) {
         track(userId, event, b -> {
             b.properties(properties);
-            addOptions(b, options, timestamp);
+            LegacySupport.addOptions(b, options, timestamp);
         });
     }
 
-    /**
-     * Method to support old-style options settings.
-     *
-     * @deprecated for internal use only
-     */
-    @Deprecated
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    static <B extends MessageBuilder> B addOptions(B builder, Map<String, ?> options, Date timestamp) {
-        if (timestamp != null) {
-            builder.timestamp(timestamp);
-        }
+    class LegacySupport {
 
-        if (options.containsKey("anonymousId")) {
-            Object anonymousId = options.get("anonymousId");
-            if (anonymousId != null) {
-                builder.anonymousId(anonymousId.toString());
+        private static final List<String> SUPPORTED_CONTEXT_OPTIONS = Arrays.asList("ip", "language", "userAgent", "Intercom");
+
+        private LegacySupport() { }
+
+        /**
+         * Method to support old-style options settings.
+         *
+         * @deprecated for internal use only
+         */
+        @Deprecated
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        static <B extends MessageBuilder> B addOptions(B builder, Map<String, ?> options, Date timestamp) {
+            if (timestamp != null) {
+                builder.timestamp(timestamp);
             }
-        }
 
-        if (options.containsKey("integrations")) {
-            Object integrations = options.get("integrations");
-            if (integrations instanceof Map) {
-                Map<String, Object> integrationsMap = (Map<String, Object>) integrations;
-                integrationsMap.forEach((key, payload) -> {
-                    if (payload instanceof Boolean) {
-                        builder.enableIntegration(key, (Boolean) payload);
-                    } else if (payload instanceof Map) {
-                        builder.integrationOptions(key, (Map<String, ?>) payload);
-                    }
-                });
+            if (options.containsKey("anonymousId")) {
+                Object anonymousId = options.get("anonymousId");
+                if (anonymousId != null) {
+                    builder.anonymousId(anonymousId.toString());
+                }
             }
-        }
 
-        final List<String> contextOptions = Arrays.asList("ip", "language", "userAgent", "Intercom");
-
-        contextOptions.forEach(option -> {
-            if (options.containsKey(option)) {
-                builder.context(option, options.get(option));
+            if (options.containsKey("integrations")) {
+                Object integrations = options.get("integrations");
+                if (integrations instanceof Map) {
+                    Map<String, Object> integrationsMap = (Map<String, Object>) integrations;
+                    integrationsMap.forEach((key, payload) -> {
+                        if (payload instanceof Boolean) {
+                            builder.enableIntegration(key, (Boolean) payload);
+                        } else if (payload instanceof Map) {
+                            builder.integrationOptions(key, (Map<String, ?>) payload);
+                        }
+                    });
+                }
             }
-        });
 
-        return builder;
+            SUPPORTED_CONTEXT_OPTIONS.forEach(option -> {
+                if (options.containsKey(option)) {
+                    builder.context(option, options.get(option));
+                }
+            });
+
+            return builder;
+        }
     }
 }

@@ -29,7 +29,6 @@ import com.segment.analytics.messages.TrackMessage
 import groovy.transform.CompileDynamic
 import io.micronaut.context.ApplicationContext
 import spock.lang.AutoCleanup
-import spock.lang.Shared
 import spock.lang.Specification
 
 @CompileDynamic
@@ -51,12 +50,12 @@ class SegmentServiceLegacySpec extends Specification {
     private static final String SECTION = 'Header'
     private static final String EVENT = 'USER_LOGGED_IN'
 
-    @Shared @AutoCleanup ApplicationContext context
+    @AutoCleanup ApplicationContext context
 
-    @Shared List<Message> queue = []
-    @Shared boolean flushed
+    List<Message> queue = []
+    boolean flushed
 
-    @Shared Analytics analytics = Mock {
+    Analytics analytics = Mock {
         enqueue(_ as  MessageBuilder) >> { MessageBuilder builder ->
             queue << builder.build()
         }
@@ -66,9 +65,9 @@ class SegmentServiceLegacySpec extends Specification {
         }
     }
 
-    @Shared SegmentService service
+    SegmentService service
 
-    void setupSpec() {
+    void setup() {
         context = ApplicationContext
                 .build('segment.api-key': API_KEY)
                 .build()
@@ -77,11 +76,6 @@ class SegmentServiceLegacySpec extends Specification {
         context.start()
 
         service = context.getBean(SegmentService)
-    }
-
-    void cleanup() {
-        queue.clear()
-        flushed = false
     }
 
     void "flush"() {

@@ -45,6 +45,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("FieldMayBeFinal")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class SegmentServiceTest {
 
@@ -69,8 +70,6 @@ class SegmentServiceTest {
 
     private static ApplicationContext context;
     private static boolean flushed;
-
-    @SuppressWarnings("FieldMayBeFinal")
     private static List<Message> queue = new ArrayList<>();
 
     private static SegmentService service;
@@ -89,6 +88,7 @@ class SegmentServiceTest {
         Map<String, Object> properties = new HashMap<>();
         properties.put("segment.api-key", API_KEY);
         properties.put("segment.options.language", DEFAULT_LANGUAGE);
+
         context = ApplicationContext.build(properties).build();
         context.registerSingleton(Analytics.class, analytics);
         context.start();

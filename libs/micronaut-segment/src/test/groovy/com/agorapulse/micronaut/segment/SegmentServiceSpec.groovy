@@ -35,7 +35,7 @@ import spock.lang.Specification
 import java.time.Instant
 
 @CompileDynamic
-@SuppressWarnings(['Instanceof'])
+@SuppressWarnings(['Instanceof', 'MethodCount'])
 class SegmentServiceSpec extends Specification {
 
     private static final int INTERCOM = 123456
@@ -52,6 +52,8 @@ class SegmentServiceSpec extends Specification {
     private static final String CATEGORY = 'VIP'
     private static final String SECTION = 'Header'
     private static final String EVENT = 'USER_LOGGED_IN'
+    private static final Instant INSTANT_NOW = Instant.now()
+    private static final Date DATE_NOW = Date.from(INSTANT_NOW)
 
     @Shared @AutoCleanup ApplicationContext context
 
@@ -97,49 +99,24 @@ class SegmentServiceSpec extends Specification {
     void 'alias user'() {
         when:
             service.alias(PREVIOUS_ID, USER_ID)
+        and:
+            AliasMessage message = readMessage(AliasMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof AliasMessage
             message.userId() == USER_ID
-
-        when:
-            AliasMessage aliasMessage = message as AliasMessage
-        then:
-            aliasMessage
-            aliasMessage.previousId() == PREVIOUS_ID
+            message.previousId() == PREVIOUS_ID
     }
 
     void 'alias user with timestamp'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.alias(PREVIOUS_ID, USER_ID) {
-                timestamp now
+                timestamp INSTANT_NOW
             }
+        and:
+            AliasMessage message = readMessage(AliasMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof AliasMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
-
-        when:
-            AliasMessage aliasMessage = message as AliasMessage
-        then:
-            aliasMessage
-            aliasMessage.previousId() == PREVIOUS_ID
+            message.previousId() == PREVIOUS_ID
+            message.timestamp() == DATE_NOW
     }
 
     void 'identify simple'() {
@@ -147,15 +124,9 @@ class SegmentServiceSpec extends Specification {
             service.identify(
                 USER_ID
             )
+        and:
+            IdentifyMessage message = readMessage(IdentifyMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof IdentifyMessage
             message.userId() == USER_ID
     }
 
@@ -167,60 +138,33 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            IdentifyMessage message = readMessage(IdentifyMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof IdentifyMessage
             message.userId() == USER_ID
-        when:
-            IdentifyMessage identifyMessage = message as IdentifyMessage
-        then:
-            identifyMessage
-            identifyMessage.traits()
-            identifyMessage.traits().category == CATEGORY
+
+            assertCategory message.traits()
     }
 
     void 'identify with traits and timestamp'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.identify(USER_ID) {
                 traits(
                     category:CATEGORY,
                     nullable: null,
                 )
-                timestamp now
+                timestamp INSTANT_NOW
             }
+        and:
+            IdentifyMessage message = readMessage(IdentifyMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof IdentifyMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == DATE_NOW
 
-        when:
-            IdentifyMessage identifyMessage = message as IdentifyMessage
-        then:
-            identifyMessage
-            identifyMessage.traits()
-            identifyMessage.traits().category == CATEGORY
+            assertCategory message.traits()
     }
 
     void 'identify with google analytics id'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.identify(USER_ID) {
                 traits(
@@ -228,7 +172,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
 
-                timestamp now
+                timestamp INSTANT_NOW
 
                 anonymousId ANONYMOUS_ID
 
@@ -245,34 +189,16 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            IdentifyMessage message = readMessage(IdentifyMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof IdentifyMessage
             message.userId() == USER_ID
+            message.timestamp() == DATE_NOW
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
-            message.integrations()
-            message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
-            message.integrations()['Something Enabled'] == true
-            message.integrations()['Something Disabled'] == false
-            message.context()
-            message.context().ip == IP_ADDRESS
-            message.context().language == LANGUAGE
-            message.context().userAgent == USER_AGENT
-            message.context().Intercom == INTERCOM
 
-        when:
-            IdentifyMessage identifyMessage = message as IdentifyMessage
-        then:
-            identifyMessage
-            identifyMessage.traits()
-            identifyMessage.traits().category == CATEGORY
+            assertFullIntegrations message
+            assertFullContext message
+            assertCategory message.traits()
     }
 
     void 'page no category'() {
@@ -281,22 +207,11 @@ class SegmentServiceSpec extends Specification {
                 USER_ID,
                 NAME
             )
+        and:
+            PageMessage message = readMessage(PageMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof PageMessage
             message.userId() == USER_ID
-
-        when:
-            PageMessage pageMessage = message as PageMessage
-        then:
-            pageMessage
-            pageMessage.name() == NAME
+            message.name() == NAME
     }
 
     void 'page simple'() {
@@ -306,24 +221,13 @@ class SegmentServiceSpec extends Specification {
                 NAME,
                 CATEGORY
             )
+        and:
+            PageMessage message = readMessage(PageMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof PageMessage
             message.userId() == USER_ID
+            message.name() == NAME
 
-        when:
-            PageMessage pageMessage = message as PageMessage
-        then:
-            pageMessage
-            pageMessage.name() == NAME
-            pageMessage.properties()
-            pageMessage.properties().category == CATEGORY
+            assertCategory message.properties()
     }
 
     void 'page with properties'() {
@@ -335,31 +239,16 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            PageMessage message = readMessage(PageMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof PageMessage
             message.userId() == USER_ID
+            message.name() == NAME
 
-        when:
-            PageMessage pageMessage = message as PageMessage
-        then:
-            pageMessage
-            pageMessage.name() == NAME
-            pageMessage.properties()
-            pageMessage.properties().category == CATEGORY
-            pageMessage.properties().section == SECTION
+            assertCategoryAndSection message.properties()
     }
 
     void 'page with properties and timestamp'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.page(USER_ID, NAME) {
                 properties(
@@ -367,34 +256,19 @@ class SegmentServiceSpec extends Specification {
                     section: SECTION,
                     nullable: null
                 )
-                timestamp now
+                timestamp INSTANT_NOW
             }
+        and:
+            PageMessage message = readMessage(PageMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof PageMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.name() == NAME
+            message.timestamp() == DATE_NOW
 
-        when:
-            PageMessage pageMessage = message as PageMessage
-        then:
-            pageMessage
-            pageMessage.name() == NAME
-            pageMessage.properties()
-            pageMessage.properties().category == CATEGORY
-            pageMessage.properties().section == SECTION
+            assertCategoryAndSection message.properties()
     }
 
     void 'page with google analytics id'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.page(USER_ID, NAME) {
                 properties(
@@ -403,7 +277,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
 
-                timestamp now
+                timestamp INSTANT_NOW
 
                 anonymousId ANONYMOUS_ID
 
@@ -420,36 +294,17 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            PageMessage message = readMessage(PageMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof PageMessage
             message.userId() == USER_ID
+            message.name() == NAME
+            message.timestamp() == DATE_NOW
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
-            message.integrations()
-            message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
-            message.integrations()['Something Enabled'] == true
-            message.integrations()['Something Disabled'] == false
-            message.context()
-            message.context().ip == IP_ADDRESS
-            message.context().language == LANGUAGE
-            message.context().userAgent == USER_AGENT
-            message.context().Intercom == INTERCOM
 
-        when:
-            PageMessage pageMessage = message as PageMessage
-        then:
-            pageMessage
-            pageMessage.name() == NAME
-            pageMessage.properties()
-            pageMessage.properties().category == CATEGORY
-            pageMessage.properties().section == SECTION
+            assertFullIntegrations message
+            assertFullContext message
+            assertCategoryAndSection message.properties()
     }
 
     void 'screen no category'() {
@@ -458,22 +313,11 @@ class SegmentServiceSpec extends Specification {
                 USER_ID,
                 NAME
             )
+        and:
+            ScreenMessage message = readMessage(ScreenMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof ScreenMessage
             message.userId() == USER_ID
-
-        when:
-            ScreenMessage screenMessage = message as ScreenMessage
-        then:
-            screenMessage
-            screenMessage.name() == NAME
+            message.name() == NAME
     }
 
     void 'screen simple'() {
@@ -483,24 +327,13 @@ class SegmentServiceSpec extends Specification {
                 NAME,
                 CATEGORY
             )
+        and:
+            ScreenMessage message = readMessage(ScreenMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof ScreenMessage
             message.userId() == USER_ID
+            message.name() == NAME
 
-        when:
-            ScreenMessage screenMessage = message as ScreenMessage
-        then:
-            screenMessage
-            screenMessage.name() == NAME
-            screenMessage.properties()
-            screenMessage.properties().category == CATEGORY
+            assertCategory message.properties()
     }
 
     void 'screen with properties'() {
@@ -512,31 +345,16 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            ScreenMessage message = readMessage(ScreenMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof ScreenMessage
             message.userId() == USER_ID
+            message.name() == NAME
 
-        when:
-            ScreenMessage screenMessage = message as ScreenMessage
-        then:
-            screenMessage
-            screenMessage.name() == NAME
-            screenMessage.properties()
-            screenMessage.properties().category == CATEGORY
-            screenMessage.properties().section == SECTION
+            assertCategoryAndSection message.properties()
     }
 
     void 'screen with properties and timestamp'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.screen(USER_ID, NAME) {
                 properties(
@@ -544,34 +362,19 @@ class SegmentServiceSpec extends Specification {
                     section: SECTION,
                     nullable: null
                 )
-                timestamp now
+                timestamp INSTANT_NOW
             }
+        and:
+            ScreenMessage message = readMessage(ScreenMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof ScreenMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.name() == NAME
+            message.timestamp() == DATE_NOW
 
-        when:
-            ScreenMessage screenMessage = message as ScreenMessage
-        then:
-            screenMessage
-            screenMessage.name() == NAME
-            screenMessage.properties()
-            screenMessage.properties().category == CATEGORY
-            screenMessage.properties().section == SECTION
+            assertCategoryAndSection message.properties()
     }
 
     void 'screen with google analytics id'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.screen(USER_ID, NAME) {
                 properties(
@@ -580,7 +383,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
 
-                timestamp now
+                timestamp INSTANT_NOW
 
                 anonymousId ANONYMOUS_ID
 
@@ -597,36 +400,17 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            ScreenMessage message = readMessage(ScreenMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof ScreenMessage
             message.userId() == USER_ID
+            message.name() == NAME
+            message.timestamp() == DATE_NOW
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
-            message.integrations()
-            message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
-            message.integrations()['Something Enabled'] == true
-            message.integrations()['Something Disabled'] == false
-            message.context()
-            message.context().ip == IP_ADDRESS
-            message.context().language == LANGUAGE
-            message.context().userAgent == USER_AGENT
-            message.context().Intercom == INTERCOM
 
-        when:
-            ScreenMessage screenMessage = message as ScreenMessage
-        then:
-            screenMessage
-            screenMessage.name() == NAME
-            screenMessage.properties()
-            screenMessage.properties().category == CATEGORY
-            screenMessage.properties().section == SECTION
+            assertFullIntegrations message
+            assertFullContext message
+            assertCategoryAndSection message.properties()
     }
 
     void 'track simple'() {
@@ -635,22 +419,11 @@ class SegmentServiceSpec extends Specification {
                 USER_ID,
                 EVENT
             )
+        and:
+            TrackMessage message = readMessage(TrackMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof TrackMessage
             message.userId() == USER_ID
-
-        when:
-            TrackMessage trackMessage = message as TrackMessage
-        then:
-            trackMessage
-            trackMessage.event() == EVENT
+            message.event() == EVENT
     }
 
     void 'track with properties'() {
@@ -662,31 +435,16 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            TrackMessage message = readMessage(TrackMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof TrackMessage
             message.userId() == USER_ID
+            message.event() == EVENT
 
-        when:
-            TrackMessage trackMessage = message as TrackMessage
-        then:
-            trackMessage
-            trackMessage.event() == EVENT
-            trackMessage.properties()
-            trackMessage.properties().category == CATEGORY
-            trackMessage.properties().section == SECTION
+            assertCategoryAndSection message.properties()
     }
 
     void 'track with properties and timestamp'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.track(USER_ID, EVENT) {
                 properties(
@@ -695,34 +453,19 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
 
-                timestamp now
+                timestamp INSTANT_NOW
             }
+        and:
+            TrackMessage message = readMessage(TrackMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof TrackMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.event() == EVENT
+            message.timestamp() == DATE_NOW
 
-        when:
-            TrackMessage trackMessage = message as TrackMessage
-        then:
-            trackMessage
-            trackMessage.event() == EVENT
-            trackMessage.properties()
-            trackMessage.properties().category == CATEGORY
-            trackMessage.properties().section == SECTION
+            assertCategoryAndSection message.properties()
     }
 
     void 'track with google analytics id'() {
-        given:
-            Instant now = Instant.now()
-
         when:
             service.track(USER_ID, EVENT) {
                 properties(
@@ -731,7 +474,7 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
 
-                timestamp now
+                timestamp INSTANT_NOW
 
                 anonymousId ANONYMOUS_ID
 
@@ -748,36 +491,17 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            TrackMessage message = readMessage(TrackMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof TrackMessage
             message.userId() == USER_ID
+            message.event() == EVENT
+            message.timestamp() == DATE_NOW
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
-            message.integrations()
-            message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
-            message.integrations()['Something Enabled'] == true
-            message.integrations()['Something Disabled'] == false
-            message.context()
-            message.context().ip == IP_ADDRESS
-            message.context().language == LANGUAGE
-            message.context().userAgent == USER_AGENT
-            message.context().Intercom == INTERCOM
 
-        when:
-            TrackMessage trackMessage = message as TrackMessage
-        then:
-            trackMessage
-            trackMessage.event() == EVENT
-            trackMessage.properties()
-            trackMessage.properties().category == CATEGORY
-            trackMessage.properties().section == SECTION
+            assertFullIntegrations message
+            assertFullContext message
+            assertCategoryAndSection message.properties()
     }
 
     void 'group simple'() {
@@ -786,21 +510,11 @@ class SegmentServiceSpec extends Specification {
                 USER_ID,
                 GROUP_ID
             )
+        and:
+            GroupMessage message = readMessage(GroupMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof GroupMessage
             message.userId() == USER_ID
-
-        when:
-            GroupMessage groupMessage = message as GroupMessage
-        then:
-            groupMessage.groupId() == GROUP_ID
+            message.groupId() == GROUP_ID
     }
 
     void 'group with traits'() {
@@ -811,23 +525,13 @@ class SegmentServiceSpec extends Specification {
                     nullable: null
                 )
             }
+        and:
+            GroupMessage message = readMessage(GroupMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof GroupMessage
             message.userId() == USER_ID
+            message.groupId() == GROUP_ID
 
-        when:
-            GroupMessage groupMessage = message as GroupMessage
-        then:
-            groupMessage.groupId() == GROUP_ID
-            groupMessage.traits()
-            groupMessage.traits().category == CATEGORY
+            assertCategory message.traits()
     }
 
     void 'group with some null values'() {
@@ -844,28 +548,61 @@ class SegmentServiceSpec extends Specification {
                     Intercom : INTERCOM,
                 )
             }
+        and:
+            GroupMessage message = readMessage(GroupMessage)
         then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof GroupMessage
             message.userId() == USER_ID
-            message.context()
-            message.context().ip == IP_ADDRESS
-            message.context().language == null
-            message.context().userAgent == USER_AGENT
-            message.context().Intercom == INTERCOM
+            message.groupId() == GROUP_ID
 
-        when:
-            GroupMessage groupMessage = message as GroupMessage
-        then:
-            groupMessage.groupId() == GROUP_ID
-            groupMessage.traits()
-            groupMessage.traits().category == CATEGORY
+            assertCategory message.traits()
+    }
+
+    private static boolean assertCategory(Map<String, ?> properties) {
+        assert properties
+        assert properties.category == CATEGORY
+        return true
+    }
+
+    private static boolean assertCategoryAndSection(Map<String, ?> properties) {
+        assert properties
+        assert properties.category == CATEGORY
+        assert properties.section == SECTION
+        return true
+    }
+
+    private boolean assertFullIntegrations(Message message) {
+        with message, {
+            integrations()
+            integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
+            integrations()['Something Enabled'] == true
+            integrations()['Something Disabled'] == false
+        }
+
+        return true
+    }
+
+    private boolean assertFullContext(Message message) {
+        with message, {
+            context()
+            context().ip == IP_ADDRESS
+            context().language == 'cs'
+            context().userAgent == USER_AGENT
+            context().Intercom == INTERCOM
+        }
+
+        return true
+    }
+
+    private <M> M readMessage(Class<M> type) {
+        assert queue
+        assert queue.size() == 1
+
+        Message message = queue.first()
+
+        assert message
+        assert type.isInstance(message)
+
+        return message as M
     }
 
 }

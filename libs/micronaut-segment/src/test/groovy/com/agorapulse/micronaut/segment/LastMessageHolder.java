@@ -15,7 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    api "com.segment.analytics.java:analytics:$segmentLibrariesVersion"
-    api "space.jasan:groovy-closure-support:$groovySupportVersion"
+package com.agorapulse.micronaut.segment;
+
+// tag::body[]
+import com.segment.analytics.MessageInterceptor;
+import com.segment.analytics.messages.Message;
+
+import javax.inject.Singleton;
+
+/**
+ * Keeps the reference to the last message.
+ */
+@Singleton
+public class LastMessageHolder implements MessageInterceptor {
+
+    private Message lastMessage;
+
+    public Message getLastMessage() {
+        return lastMessage;
+    }
+
+    @Override
+    public Message intercept(Message message) {
+        this.lastMessage = message;
+        return message;
+    }
+
 }
+// end::body[]

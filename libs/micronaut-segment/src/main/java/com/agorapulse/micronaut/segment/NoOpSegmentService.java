@@ -17,14 +17,16 @@
  */
 package com.agorapulse.micronaut.segment;
 
+import com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties;
+import com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits;
+import com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder;
 import com.segment.analytics.Analytics;
 import io.micronaut.context.annotation.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.Date;
-import java.util.Map;
+import java.util.function.Consumer;
 
 @Singleton
 @Requires(missingBeans = {Analytics.class})
@@ -44,32 +46,32 @@ public class NoOpSegmentService implements SegmentService {
     }
 
     @Override
-    public void alias(String from, String to) {
+    public void alias(String from, String to, Consumer<SimpleMessageBuilder> builder) {
         // noop
     }
 
     @Override
-    public void group(String userId, String groupId, Map<String, Object> traits, Map<String, Object> options) {
+    public void group(String userId, String groupId, Consumer<MessageBuilderWithTraits> builder) {
         // noop
     }
 
     @Override
-    public void identify(String userId, Map<String, Object> traits, Date timestamp, Map<String, Object> options) {
+    public void identify(String userId, Consumer<MessageBuilderWithTraits> builder) {
         // noop
     }
 
     @Override
-    public void page(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
+    public void page(String userId, String name, Consumer<MessageBuilderWithProperties> builder) {
         // noop
     }
 
     @Override
-    public void screen(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
+    public void screen(String userId, String name, Consumer<MessageBuilderWithProperties> builder) {
         // noop
     }
 
     @Override
-    public void track(String userId, String event, Map<String, Object> properties, Date timestamp, Map<String, Object> options) {
+    public void track(String userId, String event, Consumer<MessageBuilderWithProperties> builder) {
         // noop
     }
 }

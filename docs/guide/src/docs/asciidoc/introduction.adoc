@@ -2,12 +2,11 @@
 [[_introduction]]
 = Introduction
 
-**Micronaut Segment** library allows you to integrate http://segment.com[Segment] in your https://micronaut.io[Micronaut] or https://grails.org[Grails] applications.
+**Micronaut Segment** library allows you to integrate http://segment.com[Segment] into your https://micronaut.io[Micronaut] or https://grails.org[Grails] applications.
 
-Segment lets you send your analytics data to any service you want, without you having to integrate with each one individually.
+http://segment.com[Segment] lets you send your analytics data to any service you want, without having to integrate with each one individually.
 
-It provides the following beans:
+The library provides the following beans:
 
  * `Analytics` - official https://segment.com/docs/libraries/java/[Segment Analytics for Java library] analytics services
  * `SegmentService` - A server side service client to call https://segment.com/docs/libraries/http/[Segment APIs], which is a wrapper around the official https://segment.com/docs/libraries/java/[Segment Analytics for Java library].
-

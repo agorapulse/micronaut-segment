@@ -26,6 +26,8 @@ pluginManagement {
         id 'org.kordamp.gradle.checkstyle'              version kordampPluginVersion
         id 'org.kordamp.gradle.codenarc'                version kordampPluginVersion
         id 'org.kordamp.gradle.coveralls'               version kordampPluginVersion
+        id 'org.kordamp.gradle.guide'                   version kordampPluginVersion
+        id 'org.ajoberstar.git-publish'                 version gitPublishVersion
         id 'io.github.gradle-nexus.publish-plugin'      version nexusPluginVersion
     }
 }
@@ -44,16 +46,12 @@ plugins {
 }
 
 projects {
-    directories = ['examples', 'libs', 'guide']
+    directories = ['docs', 'examples', 'libs']
 
     plugins {
         dirs(['examples', 'libs']) {
             id 'java-library'
             id 'groovy'
-        }
-        dirs(['guide']) {
-            id 'org.kordamp.gradle.guide'
-            id 'org.ajoberstar.git-publish'
         }
     }
 }

@@ -17,11 +17,16 @@
  */
 package com.agorapulse.micronaut.segment;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import com.agorapulse.micronaut.segment.builder.MessageBuilder;
+import com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties;
+import com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits;
+import com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder;
+
+import java.util.*;
+import java.util.function.Consumer;
 
 public interface SegmentService {
+
 
     /**
      * Flushes the current contents of the queue
@@ -35,7 +40,19 @@ public interface SegmentService {
      *             which you would recognize a signed-in user in your system.
      * @param to   new user id
      */
-    void alias(String from, String to);
+    default void alias(String from, String to) {
+        alias(from, to, b -> { });
+    }
+
+    /**
+     * Alias method lets you merge two user profiles, including their actions and traits.
+     *
+     * @param from    the user's id after they are logged in. It's the same id as
+     *                which you would recognize a signed-in user in your system.
+     * @param to      new user id
+     * @param builder Consumer of the builder for the additional configuration
+     */
+    void alias(String from, String to, Consumer<SimpleMessageBuilder> builder);
 
     /**
      * Group method lets you associate a user with a group.
@@ -45,8 +62,18 @@ public interface SegmentService {
      * @param groupId The ID for this group in your database.
      */
     default void group(String userId, String groupId) {
-        group(userId, groupId, Collections.emptyMap());
+        group(userId, groupId, b -> { });
     }
+
+    /**
+     * Group method lets you associate a user with a group.
+     *
+     * @param userId  the user's id after they are logged in. It's the same id as
+     *                which you would recognize a signed-in user in your system.
+     * @param groupId The ID for this group in your database.
+     * @param builder Consumer of the builder for the additional configuration
+     */
+    void group(String userId, String groupId, Consumer<MessageBuilderWithTraits> builder);
 
     /**
      * Group method lets you associate a user with a group.
@@ -56,9 +83,11 @@ public interface SegmentService {
      * @param groupId The ID for this group in your database.
      * @param traits  A dictionary of traits you know about the user. Things like: email,
      *                name or friends.
+     * @deprecated use {@link #group(String, String, Consumer)} instead
      */
-    default void group(String userId, String groupId, Map<String, Object> traits) {
-        group(userId, groupId, traits, Collections.emptyMap());
+    @Deprecated
+    default void group(String userId, String groupId, Map<String, ?> traits) {
+        group(userId, groupId, b -> b.traits(traits));
     }
 
     /**
@@ -71,8 +100,15 @@ public interface SegmentService {
      *                name or friends.
      * @param options a custom object which allows you to set a timestamp,
      *                an anonymous cookie id, or enable specific integrations.
+     * @deprecated use {@link #group(String, String, Consumer)} instead
      */
-    void group(String userId, String groupId, Map<String, Object> traits, Map<String, Object> options);
+    @Deprecated
+    default void group(String userId, String groupId, Map<String, ?> traits, Map<String, ?> options) {
+        group(userId, groupId, b -> {
+            b.traits(traits);
+            LegacySupport.addOptions(b, options, null);
+        });
+    }
 
     /**
      * identify lets you tie a user to their actions and record traits about them.
@@ -80,8 +116,16 @@ public interface SegmentService {
      * @param userId The ID for this user in your database.
      */
     default void identify(String userId) {
-        identify(userId, Collections.emptyMap());
+        identify(userId, b -> { });
     }
+
+    /**
+     * identify lets you tie a user to their actions and record traits about them.
+     *
+     * @param userId  The ID for this user in your database.
+     * @param builder Consumer of the builder for the additional configuration
+     */
+    void identify(String userId, Consumer<MessageBuilderWithTraits> builder);
 
 
     /**
@@ -90,9 +134,11 @@ public interface SegmentService {
      * @param userId The ID for this user in your database.
      * @param traits A dictionary of traits you know about the user. Things like: email,
      *               name or friends.
+     * @deprecated user {@link #identify(String, Consumer)} instead
      */
-    default void identify(String userId, Map<String, Object> traits) {
-        identify(userId, traits, null);
+    @Deprecated
+    default void identify(String userId, Map<String, ?> traits) {
+        identify(userId, b -> b.traits(traits));
     }
 
 
@@ -106,9 +152,11 @@ public interface SegmentService {
      *                  If the identify just happened, leave it blank and we'll use
      *                  the server's time. If you are importing data from the past,
      *                  make sure you provide this argument.
+     * @deprecated user {@link #identify(String, Consumer)} instead
      */
-    default void identify(String userId, Map<String, Object> traits, Date timestamp) {
-        identify(userId, traits, timestamp, Collections.emptyMap());
+    @Deprecated
+    default void identify(String userId, Map<String, ?> traits, Date timestamp) {
+        identify(userId, b -> b.traits(traits).timestamp(timestamp));
     }
 
     /**
@@ -123,8 +171,36 @@ public interface SegmentService {
      *                  make sure you provide this argument.
      * @param options   A custom object which allows you to set a timestamp, an anonymous cookie id,
      *                  or enable specific integrations.
+     * @deprecated user {@link #identify(String, Consumer)} instead
      */
-    void identify(String userId, Map<String, Object> traits, Date timestamp, Map<String, Object> options);
+    @Deprecated
+    default void identify(String userId, Map<String, ?> traits, Date timestamp, Map<String, ?> options) {
+        identify(userId, b -> {
+            b.traits(traits);
+            LegacySupport.addOptions(b, options, timestamp);
+        });
+    }
+
+    /**
+     * Page method lets you record webpage visits from your web servers.
+     *
+     * @param userId The ID for this user in your database.
+     * @param name   The webpage name you’re tracking. We recommend human-readable
+     *               names like Login or Register.
+     */
+    default void page(String userId, String name) {
+        page(userId, name, b -> { });
+    }
+
+    /**
+     * Page method lets you record webpage visits from your web servers.
+     *
+     * @param userId  The ID for this user in your database.
+     * @param name    The webpage name you’re tracking. We recommend human-readable
+     *                names like Login or Register.
+     * @param builder Consumer of the builder for the additional configuration
+     */
+    void page(String userId, String name, Consumer<MessageBuilderWithProperties> builder);
 
     /**
      * Page method lets you record webpage visits from your web servers.
@@ -136,7 +212,7 @@ public interface SegmentService {
      *                 could be Sports.
      */
     default void page(String userId, String name, String category) {
-        page(userId, name, category, Collections.emptyMap());
+        page(userId, name, b -> b.properties("category", category));
     }
 
     /**
@@ -149,9 +225,11 @@ public interface SegmentService {
      *                   could be Sports.
      * @param properties A dictionary of properties for the webpage visit. If the event
      *                   was Login, it might have properties like path or title.
+     * @deprecated use {@link #page(String, String, Consumer)} instead
      */
-    default void page(String userId, String name, String category, Map<String, Object> properties) {
-        page(userId, name, category, properties, null);
+    @Deprecated
+    default void page(String userId, String name, String category, Map<String, ?> properties) {
+        page(userId, name, b -> b.properties("category", category).properties(properties));
     }
 
     /**
@@ -168,9 +246,11 @@ public interface SegmentService {
      *                   place. If the event just happened, leave it blank and we'll
      *                   use the server's time. If you are importing data from the
      *                   past, make sure you provide this argument.
+     * @deprecated use {@link #page(String, String, Consumer)} instead
      */
-    default void page(String userId, String name, String category, Map<String, Object> properties, Date timestamp) {
-        page(userId, name, category, properties, timestamp, Collections.emptyMap());
+    @Deprecated
+    default void page(String userId, String name, String category, Map<String, ?> properties, Date timestamp) {
+        page(userId, name, b -> b.properties("category", category).properties(properties).timestamp(timestamp));
     }
 
 
@@ -190,9 +270,26 @@ public interface SegmentService {
      *                   past, make sure you provide this argument.
      * @param options    A custom object which allows you to set a timestamp, an anonymous
      *                   cookie id, or enable specific integrations.
+     * @deprecated use {@link #page(String, String, Consumer)} instead
      */
-    void page(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options);
+    @Deprecated
+    default void page(String userId, String name, String category, Map<String, ?> properties, Date timestamp, Map<String, ?> options) {
+        page(userId, name, b -> {
+            b.properties("category", category).properties(properties);
+            LegacySupport.addOptions(b, options, timestamp);
+        });
+    }
 
+    /**
+     * screen lets you record mobile screen views from your web servers.
+     *
+     * @param userId The ID for this user in your database.
+     * @param name   The screen name you’re tracking. We recommend human-readable
+     *               names like Login or Register.
+     */
+    default void screen(String userId, String name) {
+        screen(userId, name, b -> { });
+    }
 
     /**
      * screen lets you record mobile screen views from your web servers.
@@ -204,8 +301,18 @@ public interface SegmentService {
      *                 could be Sports.
      */
     default void screen(String userId, String name, String category) {
-        screen(userId, name, category, Collections.emptyMap());
+        screen(userId, name, b -> b.properties("category", category));
     }
+
+    /**
+     * screen lets you record mobile screen views from your web servers.
+     *
+     * @param userId  The ID for this user in your database.
+     * @param name    The screen name you’re tracking. We recommend human-readable
+     *                names like Login or Register.
+     * @param builder Consumer of the builder for the additional configuration
+     */
+    void screen(String userId, String name, Consumer<MessageBuilderWithProperties> builder);
 
     /**
      * screen lets you record mobile screen views from your web servers.
@@ -218,9 +325,11 @@ public interface SegmentService {
      * @param properties A dictionary of properties for the screen view. If the screen
      *                   is Restaurant Reviews, it might have properties like reviewCount
      *                   or restaurantName.
+     * @deprecated use {@link #screen(String, String, Consumer)} instead
      */
-    default void screen(String userId, String name, String category, Map<String, Object> properties) {
-        screen(userId, name, category, properties, null);
+    @Deprecated
+    default void screen(String userId, String name, String category, Map<String, ?> properties) {
+        screen(userId, name, b -> b.properties("category", category).properties(properties));
     }
 
 
@@ -239,9 +348,11 @@ public interface SegmentService {
      *                   place. If the event just happened, leave it blank and we'll
      *                   use the server's time. If you are importing data from the
      *                   past, make sure you provide this argument.
+     * @deprecated use {@link #screen(String, String, Consumer)} instead
      */
-    default void screen(String userId, String name, String category, Map<String, Object> properties, Date timestamp) {
-       screen(userId, name, category, properties, timestamp, Collections.emptyMap());
+    @Deprecated
+    default void screen(String userId, String name, String category, Map<String, ?> properties, Date timestamp) {
+        screen(userId, name, b -> b.properties("category", category).properties(properties).timestamp(timestamp));
     }
 
 
@@ -262,19 +373,36 @@ public interface SegmentService {
      *                   past, make sure you provide this argument.
      * @param options    A custom object which allows you to set a timestamp, an anonymous
      *                   cookie id, or enable specific integrations.
+     * @deprecated use {@link #screen(String, String, Consumer)} instead
      */
-    void screen(String userId, String name, String category, Map<String, Object> properties, Date timestamp, Map<String, Object> options);
+    @Deprecated
+    default void screen(String userId, String name, String category, Map<String, ?> properties, Date timestamp, Map<String, ?> options) {
+        screen(userId, name, b -> {
+            b.properties("category", category).properties(properties);
+            LegacySupport.addOptions(b, options, timestamp);
+        });
+    }
 
     /**
      * track lets you record the actions your users perform.
      *
-     * @param userId     The ID for this user in your database.
-     * @param event      The name of the event you’re tracking. We recommend human-readable
-     *                   names like Played Song or Updated Status.
+     * @param userId The ID for this user in your database.
+     * @param event  The name of the event you’re tracking. We recommend human-readable
+     *               names like Played Song or Updated Status.
      */
     default void track(String userId, String event) {
-        track(userId, event, Collections.emptyMap());
+        track(userId, event, b -> { });
     }
+
+    /**
+     * track lets you record the actions your users perform.
+     *
+     * @param userId  The ID for this user in your database.
+     * @param event   The name of the event you’re tracking. We recommend human-readable
+     *                names like Played Song or Updated Status.
+     * @param builder Consumer of the builder for the additional configuration
+     */
+    void track(String userId, String event, Consumer<MessageBuilderWithProperties> builder);
 
     /**
      * track lets you record the actions your users perform.
@@ -284,9 +412,11 @@ public interface SegmentService {
      *                   names like Played Song or Updated Status.
      * @param properties A dictionary of properties for the event. If the event was Added to Cart,
      *                   it might have properties like price or product.
+     * @deprecated use {@link #screen(String, String, Consumer)} instead
      */
-    default void track(String userId, String event, Map<String, Object> properties) {
-        track(userId, event, properties, null);
+    @Deprecated
+    default void track(String userId, String event, Map<String, ?> properties) {
+        track(userId, event, b -> b.properties(properties));
     }
 
     /**
@@ -301,9 +431,11 @@ public interface SegmentService {
      *                   place. If the event just happened, leave it blank and we'll
      *                   use the server's time. If you are importing data from the
      *                   past, make sure you provide this argument.
+     * @deprecated use {@link #track(String, String, Consumer)} instead
      */
-    default void track(String userId, String event, Map<String, Object> properties, Date timestamp) {
-        track(userId, event, properties, timestamp, Collections.emptyMap());
+    @Deprecated
+    default void track(String userId, String event, Map<String, ?> properties, Date timestamp) {
+        track(userId, event, b -> b.properties(properties).timestamp(timestamp));
     }
 
 
@@ -321,7 +453,69 @@ public interface SegmentService {
      *                   past, make sure you provide this argument.
      * @param options    A custom object which allows you to set a timestamp, an anonymous cookie id,
      *                   or enable specific integrations.
+     * @deprecated use {@link #track(String, String, Consumer)} instead
      */
-    void track(String userId, String event, Map<String, Object> properties, Date timestamp, Map<String, Object> options);
+    @Deprecated
+    default void track(String userId, String event, Map<String, ?> properties, Date timestamp, Map<String, ?> options) {
+        track(userId, event, b -> {
+            b.properties(properties);
+            LegacySupport.addOptions(b, options, timestamp);
+        });
+    }
 
+    class LegacySupport {
+
+        private static final Map<String, List<String>> SUPPORTED_CONTEXT_OPTIONS = new HashMap<>();
+
+        static {
+            SUPPORTED_CONTEXT_OPTIONS.put("ip", Collections.singletonList("ip"));
+            SUPPORTED_CONTEXT_OPTIONS.put("language", Collections.singletonList("language"));
+            SUPPORTED_CONTEXT_OPTIONS.put("userAgent", Arrays.asList("userAgent", "user-agent"));
+            SUPPORTED_CONTEXT_OPTIONS.put("Intercom", Arrays.asList("Intercom", "intercom"));
+        }
+
+        private LegacySupport() { }
+
+        /**
+         * Method to support old-style options settings.
+         *
+         * @deprecated for internal use only
+         */
+        @Deprecated
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        static <B extends MessageBuilder> B addOptions(B builder, Map<String, ?> options, Date timestamp) {
+            if (timestamp != null) {
+                builder.timestamp(timestamp);
+            }
+
+            if (options.containsKey("anonymousId")) {
+                Object anonymousId = options.get("anonymousId");
+                if (anonymousId != null) {
+                    builder.anonymousId(anonymousId.toString());
+                }
+            }
+
+            if (options.containsKey("integrations")) {
+                Object integrations = options.get("integrations");
+                if (integrations instanceof Map) {
+                    Map<String, Object> integrationsMap = (Map<String, Object>) integrations;
+                    integrationsMap.forEach((key, payload) -> {
+                        if (payload instanceof Boolean) {
+                            builder.enableIntegration(key, (Boolean) payload);
+                        } else if (payload instanceof Map) {
+                            builder.integrationOptions(key, (Map<String, ?>) payload);
+                        }
+                    });
+                }
+            }
+
+            SUPPORTED_CONTEXT_OPTIONS.forEach((option, variants) -> variants.forEach(variant -> {
+                if (options.containsKey(variant)) {
+                    builder.context(option, options.get(variant));
+                }
+            }));
+
+            return builder;
+        }
+    }
 }

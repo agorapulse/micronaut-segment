@@ -15,7 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    api "com.segment.analytics.java:analytics:$segmentLibrariesVersion"
-    api "space.jasan:groovy-closure-support:$groovySupportVersion"
+package com.agorapulse.micronaut.segment.builder;
+
+import com.segment.analytics.messages.AliasMessage;
+
+public class DefaultSimpleMessageBuilder extends DefaultMessageBuilder<SimpleMessageBuilder> implements SimpleMessageBuilder {
+
+    public AliasMessage.Builder buildAliasMessage(String from) {
+        AliasMessage.Builder builder = AliasMessage.builder(from);
+        buildMessage(builder);
+        return builder;
+    }
 }

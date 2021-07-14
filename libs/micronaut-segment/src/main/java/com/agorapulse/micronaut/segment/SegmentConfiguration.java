@@ -42,13 +42,22 @@ public class SegmentConfiguration {
         this.apiKey = apiKey;
     }
 
+    /**
+     * @return the default options for the messages
+     * @deprecated declare {@link com.segment.analytics.MessageTransformer} bean instead
+     */
+    @Deprecated
     public Map<String, Object> getOptions() {
         return options;
     }
 
+    /**
+     * Sets the default options for the messages.
+     * @deprecated declare {@link com.segment.analytics.MessageTransformer} bean instead
+     */
+    @Deprecated
     public void setOptions(Map<String, Object> options) {
         this.options = options;
     }
-
 
 }

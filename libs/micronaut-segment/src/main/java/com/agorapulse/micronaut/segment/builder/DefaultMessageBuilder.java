@@ -83,11 +83,11 @@ public abstract class DefaultMessageBuilder<V extends MessageBuilder<V>> impleme
         }
 
         if (StringUtils.isNotEmpty(anonymousId)) {
-            builder.messageId(anonymousId);
+            builder.anonymousId(anonymousId);
         }
 
         if (StringUtils.isNotEmpty(userId)) {
-            builder.messageId(userId);
+            builder.userId(userId);
         }
 
         if (!integrationsEnabled.isEmpty()) {

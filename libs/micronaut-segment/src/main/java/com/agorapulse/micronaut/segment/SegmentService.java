@@ -63,8 +63,7 @@ public interface SegmentService {
      * @param groupId The ID for this group in your database.
      */
     default void group(String userId, String groupId) {
-        group(userId, groupId, b -> {
-        });
+        group(userId, groupId, b -> { });
     }
 
     /**
@@ -118,8 +117,7 @@ public interface SegmentService {
      * @param userId The ID for this user in your database.
      */
     default void identify(String userId) {
-        identify(userId, b -> {
-        });
+        identify(userId, b -> { });
     }
 
     /**
@@ -192,8 +190,7 @@ public interface SegmentService {
      *               names like Login or Register.
      */
     default void page(String userId, String name) {
-        page(userId, name, b -> {
-        });
+        page(userId, name, b -> { });
     }
 
     /**
@@ -292,8 +289,7 @@ public interface SegmentService {
      *               names like Login or Register.
      */
     default void screen(String userId, String name) {
-        screen(userId, name, b -> {
-        });
+        screen(userId, name, b -> { });
     }
 
     /**
@@ -396,8 +392,7 @@ public interface SegmentService {
      *               names like Played Song or Updated Status.
      */
     default void track(String userId, String event) {
-        track(userId, event, b -> {
-        });
+        track(userId, event, b -> { });
     }
 
     /**

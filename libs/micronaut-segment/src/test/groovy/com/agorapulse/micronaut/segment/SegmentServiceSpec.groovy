@@ -50,7 +50,6 @@ class SegmentServiceSpec extends Specification {
     private static final String SECTION = 'Header'
     private static final String EVENT = 'USER_LOGGED_IN'
 
-
     @Shared @AutoCleanup ApplicationContext context
 
     @Shared List<Message> queue = []
@@ -596,7 +595,6 @@ class SegmentServiceSpec extends Specification {
             trackMessage.event() == EVENT
     }
 
-
     @SuppressWarnings(['Instanceof'])
     void 'track with properties'() {
         when:
@@ -605,7 +603,7 @@ class SegmentServiceSpec extends Specification {
                 EVENT,
                 [
                     category: CATEGORY,
-                    section: SECTION,
+                    section : SECTION,
                     nullable: null,
                 ]
             )
@@ -629,7 +627,6 @@ class SegmentServiceSpec extends Specification {
             trackMessage.properties().category == CATEGORY
             trackMessage.properties().section == SECTION
     }
-
 
     @SuppressWarnings(['Instanceof', 'NoJavaUtilDate'])
     void 'track with properties and timestamp'() {
@@ -668,7 +665,6 @@ class SegmentServiceSpec extends Specification {
             trackMessage.properties().category == CATEGORY
             trackMessage.properties().section == SECTION
     }
-
 
     @SuppressWarnings(['Instanceof', 'NoJavaUtilDate'])
     void 'track with google analytics id'() {
@@ -799,7 +795,7 @@ class SegmentServiceSpec extends Specification {
                     ip: IP_ADDRESS,
                     language: null,
                     userAgent: USER_AGENT,
-                    Intercom: INTERCOM
+                    Intercom: INTERCOM,
                 ]
             )
         then:

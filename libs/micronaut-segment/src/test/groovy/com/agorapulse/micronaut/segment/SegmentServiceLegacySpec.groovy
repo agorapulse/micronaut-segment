@@ -32,11 +32,9 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-import java.time.Instant
-
 @CompileDynamic
-@SuppressWarnings(['Instanceof'])
-class SegmentServiceSpec extends Specification {
+@SuppressWarnings(['Instanceof', 'NoJavaUtilDate', 'GrDeprecatedAPIUsage'])
+class SegmentServiceLegacySpec extends Specification {
 
     private static final int INTERCOM = 123456
     private static final String API_KEY = 'some-api-key'
@@ -115,33 +113,6 @@ class SegmentServiceSpec extends Specification {
             aliasMessage.previousId() == PREVIOUS_ID
     }
 
-    void 'alias user with tiemstamp'() {
-        given:
-            Instant now = Instant.now()
-
-        when:
-            service.alias(PREVIOUS_ID, USER_ID) {
-                timestamp now
-            }
-        then:
-            queue
-            queue.size() == 1
-
-        when:
-            Message message = queue.first()
-        then:
-            message
-            message instanceof AliasMessage
-            message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
-
-        when:
-            AliasMessage aliasMessage = message as AliasMessage
-        then:
-            aliasMessage
-            aliasMessage.previousId() == PREVIOUS_ID
-    }
-
     void 'identify simple'() {
         when:
             service.identify(
@@ -161,12 +132,13 @@ class SegmentServiceSpec extends Specification {
 
     void 'identify with traits'() {
         when:
-            service.identify(USER_ID) {
-                traits(
+            service.identify(
+                USER_ID,
+                [
                     category: CATEGORY,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -187,16 +159,17 @@ class SegmentServiceSpec extends Specification {
 
     void 'identify with traits and timestamp'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.identify(USER_ID) {
-                traits(
-                    category:CATEGORY,
+            service.identify(
+                USER_ID,
+                [
+                    category: CATEGORY,
                     nullable: null,
-                )
-                timestamp now
-            }
+                ],
+                timestamp
+            )
         then:
             queue
             queue.size() == 1
@@ -207,7 +180,7 @@ class SegmentServiceSpec extends Specification {
             message
             message instanceof IdentifyMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
 
         when:
             IdentifyMessage identifyMessage = message as IdentifyMessage
@@ -219,32 +192,30 @@ class SegmentServiceSpec extends Specification {
 
     void 'identify with google analytics id'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.identify(USER_ID) {
-                traits(
+            service.identify(
+                USER_ID,
+                [
                     category: CATEGORY,
-                    nullable: null
-                )
-
-                timestamp now
-
-                anonymousId ANONYMOUS_ID
-
-                integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
-
-                enableIntegration 'Something Enabled', true
-                enableIntegration 'Something Disabled', false
-
-                context(
+                    nullable: null,
+                ],
+                timestamp,
+                [
+                    anonymousId: ANONYMOUS_ID,
+                    integrations: [
+                        'Google Analytics': [clientId: GOOGLE_ANALYTICS_ID],
+                        'Something Enabled': true,
+                        'Something Disabled': false,
+                    ],
                     ip: IP_ADDRESS,
                     language: LANGUAGE,
                     userAgent: USER_AGENT,
                     Intercom: INTERCOM,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -256,7 +227,7 @@ class SegmentServiceSpec extends Specification {
             message instanceof IdentifyMessage
             message.userId() == USER_ID
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
             message.integrations()
             message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
             message.integrations()['Something Enabled'] == true
@@ -328,13 +299,15 @@ class SegmentServiceSpec extends Specification {
 
     void 'page with properties'() {
         when:
-            service.page(USER_ID, NAME) {
-                properties(
-                    category: CATEGORY,
+            service.page(
+                USER_ID,
+                NAME,
+                CATEGORY,
+                [
                     section: SECTION,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -358,17 +331,19 @@ class SegmentServiceSpec extends Specification {
 
     void 'page with properties and timestamp'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.page(USER_ID, NAME) {
-                properties(
-                    category: CATEGORY,
+            service.page(
+                USER_ID,
+                NAME,
+                CATEGORY,
+                [
                     section: SECTION,
-                    nullable: null
-                )
-                timestamp now
-            }
+                    nullable: null,
+                ],
+                timestamp
+            )
         then:
             queue
             queue.size() == 1
@@ -379,7 +354,7 @@ class SegmentServiceSpec extends Specification {
             message
             message instanceof PageMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
 
         when:
             PageMessage pageMessage = message as PageMessage
@@ -393,33 +368,32 @@ class SegmentServiceSpec extends Specification {
 
     void 'page with google analytics id'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.page(USER_ID, NAME) {
-                properties(
-                    category: CATEGORY,
+            service.page(
+                USER_ID,
+                NAME,
+                CATEGORY,
+                [
                     section: SECTION,
-                    nullable: null
-                )
-
-                timestamp now
-
-                anonymousId ANONYMOUS_ID
-
-                integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
-
-                enableIntegration 'Something Enabled', true
-                enableIntegration 'Something Disabled', false
-
-                context(
+                    nullable: null,
+                ],
+                timestamp,
+                [
+                    anonymousId: ANONYMOUS_ID,
+                    integrations: [
+                        'Google Analytics': [clientId: GOOGLE_ANALYTICS_ID],
+                        'Something Enabled': true,
+                        'Something Disabled': false,
+                    ],
                     ip: IP_ADDRESS,
                     language: LANGUAGE,
                     userAgent: USER_AGENT,
                     Intercom: INTERCOM,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -431,7 +405,7 @@ class SegmentServiceSpec extends Specification {
             message instanceof PageMessage
             message.userId() == USER_ID
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
             message.integrations()
             message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
             message.integrations()['Something Enabled'] == true
@@ -505,13 +479,15 @@ class SegmentServiceSpec extends Specification {
 
     void 'screen with properties'() {
         when:
-            service.screen(USER_ID, NAME) {
-                properties(
-                    category: CATEGORY,
-                    section : SECTION,
-                    nullable: null
-                )
-            }
+            service.screen(
+                USER_ID,
+                NAME,
+                CATEGORY,
+                [
+                    section: SECTION,
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -535,17 +511,19 @@ class SegmentServiceSpec extends Specification {
 
     void 'screen with properties and timestamp'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.screen(USER_ID, NAME) {
-                properties(
-                    category: CATEGORY,
+            service.screen(
+                USER_ID,
+                NAME,
+                CATEGORY,
+                [
                     section: SECTION,
-                    nullable: null
-                )
-                timestamp now
-            }
+                    nullable: null,
+                ],
+                timestamp
+            )
         then:
             queue
             queue.size() == 1
@@ -556,7 +534,7 @@ class SegmentServiceSpec extends Specification {
             message
             message instanceof ScreenMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
 
         when:
             ScreenMessage screenMessage = message as ScreenMessage
@@ -570,33 +548,32 @@ class SegmentServiceSpec extends Specification {
 
     void 'screen with google analytics id'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.screen(USER_ID, NAME) {
-                properties(
-                    category: CATEGORY,
+            service.screen(
+                USER_ID,
+                NAME,
+                CATEGORY,
+                [
                     section: SECTION,
-                    nullable: null
-                )
-
-                timestamp now
-
-                anonymousId ANONYMOUS_ID
-
-                integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
-
-                enableIntegration 'Something Enabled', true
-                enableIntegration 'Something Disabled', false
-
-                context(
+                    nullable: null,
+                ],
+                timestamp,
+                [
+                    anonymousId: ANONYMOUS_ID,
+                    integrations: [
+                        'Google Analytics': [clientId: GOOGLE_ANALYTICS_ID],
+                        'Something Enabled': true,
+                        'Something Disabled': false,
+                    ],
                     ip: IP_ADDRESS,
                     language: LANGUAGE,
                     userAgent: USER_AGENT,
                     Intercom: INTERCOM,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -608,7 +585,7 @@ class SegmentServiceSpec extends Specification {
             message instanceof ScreenMessage
             message.userId() == USER_ID
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
             message.integrations()
             message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
             message.integrations()['Something Enabled'] == true
@@ -655,13 +632,15 @@ class SegmentServiceSpec extends Specification {
 
     void 'track with properties'() {
         when:
-            service.track(USER_ID, EVENT) {
-                properties(
+            service.track(
+                USER_ID,
+                EVENT,
+                [
                     category: CATEGORY,
                     section : SECTION,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -685,18 +664,19 @@ class SegmentServiceSpec extends Specification {
 
     void 'track with properties and timestamp'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.track(USER_ID, EVENT) {
-                properties(
+            service.track(
+                USER_ID,
+                EVENT,
+                [
                     category: CATEGORY,
-                    section : SECTION,
-                    nullable: null
-                )
-
-                timestamp now
-            }
+                    section: SECTION,
+                    nullable: null,
+                ],
+                timestamp
+            )
         then:
             queue
             queue.size() == 1
@@ -707,7 +687,7 @@ class SegmentServiceSpec extends Specification {
             message
             message instanceof TrackMessage
             message.userId() == USER_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
 
         when:
             TrackMessage trackMessage = message as TrackMessage
@@ -721,33 +701,32 @@ class SegmentServiceSpec extends Specification {
 
     void 'track with google analytics id'() {
         given:
-            Instant now = Instant.now()
+            Date timestamp = new Date()
 
         when:
-            service.track(USER_ID, EVENT) {
-                properties(
+            service.track(
+                USER_ID,
+                EVENT,
+                [
                     category: CATEGORY,
-                    section : SECTION,
-                    nullable: null
-                )
-
-                timestamp now
-
-                anonymousId ANONYMOUS_ID
-
-                integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
-
-                enableIntegration 'Something Enabled', true
-                enableIntegration 'Something Disabled', false
-
-                context(
+                    section: SECTION,
+                    nullable: null,
+                ],
+                timestamp,
+                [
+                    anonymousId: ANONYMOUS_ID,
+                    integrations: [
+                        'Google Analytics': [clientId: GOOGLE_ANALYTICS_ID],
+                        'Something Enabled': true,
+                        'Something Disabled': false,
+                    ],
                     ip: IP_ADDRESS,
                     language: LANGUAGE,
                     userAgent: USER_AGENT,
                     Intercom: INTERCOM,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -759,7 +738,7 @@ class SegmentServiceSpec extends Specification {
             message instanceof TrackMessage
             message.userId() == USER_ID
             message.anonymousId() == ANONYMOUS_ID
-            message.timestamp() == Date.from(now)
+            message.timestamp() == timestamp
             message.integrations()
             message.integrations()['Google Analytics'] == [clientId: GOOGLE_ANALYTICS_ID]
             message.integrations()['Something Enabled'] == true
@@ -805,12 +784,14 @@ class SegmentServiceSpec extends Specification {
 
     void 'group with traits'() {
         when:
-            service.group(USER_ID, GROUP_ID) {
-                traits(
+            service.group(
+                USER_ID,
+                GROUP_ID,
+                [
                     category: CATEGORY,
-                    nullable: null
-                )
-            }
+                    nullable: null,
+                ]
+            )
         then:
             queue
             queue.size() == 1
@@ -832,18 +813,20 @@ class SegmentServiceSpec extends Specification {
 
     void 'group with some null values'() {
         when:
-            service.group(USER_ID, GROUP_ID) {
-                traits(
+            service.group(
+                USER_ID,
+                GROUP_ID,
+                [
                     category: CATEGORY,
-                    nullable: null
-                )
-                context(
-                    ip       : IP_ADDRESS,
-                    language : null,
+                    nullable: null,
+                ],
+                [
+                    ip: IP_ADDRESS,
+                    language: null,
                     userAgent: USER_AGENT,
-                    Intercom : INTERCOM,
-                )
-            }
+                    Intercom: INTERCOM,
+                ]
+            )
         then:
             queue
             queue.size() == 1

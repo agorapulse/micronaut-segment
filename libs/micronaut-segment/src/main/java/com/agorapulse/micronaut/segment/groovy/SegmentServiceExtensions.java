@@ -1,3 +1,20 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Copyright 2020-2021 Agorapulse.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.agorapulse.micronaut.segment.groovy;
 
 import com.agorapulse.micronaut.segment.SegmentService;
@@ -9,6 +26,8 @@ import space.jasan.support.groovy.closure.ConsumerWithDelegate;
 
 public class SegmentServiceExtensions {
 
+    private SegmentServiceExtensions() { }
+
     /**
      * Alias method lets you merge two user profiles, including their actions and traits.
      *
@@ -19,11 +38,12 @@ public class SegmentServiceExtensions {
     public static void alias(
         SegmentService self,
         String from,
-        @DelegatesTo(type = "com.agorapulse.micronaut.segment.build.SimpleMessageBuilder", strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.build.SimpleMessageBuilder")
+        String to,
+        @DelegatesTo(type = "com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder", strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder")
             Closure<?> builder
     ) {
-        self.alias(from, ConsumerWithDelegate.create(builder));
+        self.alias(from, to, ConsumerWithDelegate.create(builder));
     }
 
     /**
@@ -38,8 +58,8 @@ public class SegmentServiceExtensions {
         SegmentService self,
         String userId,
         String groupId,
-        @DelegatesTo(type = "com.agorapulse.micronaut.segment.build.MessageBuilderWithTraits", strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.build.MessageBuilderWithTraits")
+        @DelegatesTo(type = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits", strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits")
             Closure<?> builder
     ) {
         self.group(userId, groupId, ConsumerWithDelegate.create(builder));
@@ -55,8 +75,8 @@ public class SegmentServiceExtensions {
     public static void identify(
         SegmentService self,
         String userId,
-        @DelegatesTo(type = "com.agorapulse.micronaut.segment.build.MessageBuilderWithTraits", strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.build.MessageBuilderWithTraits")
+        @DelegatesTo(type = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits", strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits")
             Closure<?> builder
     ) {
         self.identify(userId, ConsumerWithDelegate.create(builder));
@@ -74,8 +94,8 @@ public class SegmentServiceExtensions {
         SegmentService self,
         String userId,
         String name,
-        @DelegatesTo(type = "com.agorapulse.micronaut.segment.build.MessageBuilderWithProperties", strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.build.MessageBuilderWithProperties")
+        @DelegatesTo(type = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties", strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties")
             Closure<?> builder
     ) {
         self.page(userId, name, ConsumerWithDelegate.create(builder));
@@ -93,8 +113,8 @@ public class SegmentServiceExtensions {
         SegmentService self,
         String userId,
         String name,
-        @DelegatesTo(type = "com.agorapulse.micronaut.segment.build.MessageBuilderWithProperties", strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.build.MessageBuilderWithProperties")
+        @DelegatesTo(type = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties", strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties")
             Closure<?> builder
     ) {
         self.screen(userId, name, ConsumerWithDelegate.create(builder));
@@ -112,8 +132,8 @@ public class SegmentServiceExtensions {
         SegmentService self,
         String userId,
         String event,
-        @DelegatesTo(type = "com.agorapulse.micronaut.segment.build.MessageBuilderWithProperties", strategy = Closure.DELEGATE_FIRST)
-        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.build.MessageBuilderWithProperties")
+        @DelegatesTo(type = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties", strategy = Closure.DELEGATE_FIRST)
+        @ClosureParams(value = FromString.class, options = "com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties")
             Closure<?> builder
     ) {
         self.track(userId, event, ConsumerWithDelegate.create(builder));

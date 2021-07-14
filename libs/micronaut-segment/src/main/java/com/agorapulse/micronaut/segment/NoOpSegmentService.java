@@ -46,7 +46,7 @@ public class NoOpSegmentService implements SegmentService {
     }
 
     @Override
-    public void alias(String from, Consumer<SimpleMessageBuilder> builder) {
+    public void alias(String from, String to, Consumer<SimpleMessageBuilder> builder) {
         // no-op
     }
 

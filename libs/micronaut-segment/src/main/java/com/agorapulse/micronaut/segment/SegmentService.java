@@ -43,7 +43,7 @@ public interface SegmentService {
      * @param to   new user id
      */
     default void alias(String from, String to) {
-        alias(from, b -> b.userId(to));
+        alias(from, to, b -> { });
     }
 
     /**
@@ -51,9 +51,10 @@ public interface SegmentService {
      *
      * @param from    the user's id after they are logged in. It's the same id as
      *                which you would recognize a signed-in user in your system.
+     * @param to      new user id
      * @param builder Consumer of the builder for the additional configuration
      */
-    void alias(String from, Consumer<SimpleMessageBuilder> builder);
+    void alias(String from, String to, Consumer<SimpleMessageBuilder> builder);
 
     /**
      * Group method lets you associate a user with a group.

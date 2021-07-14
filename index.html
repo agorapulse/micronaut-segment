@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.10">
+<meta name="author" content="Vladimir Orany">
+<title>Micronaut integration for Segment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
+<link rel="stylesheet" href="./asciidoctor.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+.hidden {
+    display: none;
+}
+
+.switch {
+    border-width: 1px 1px 0 1px;
+    border-style: solid;
+    border-color: #7a2518;
+    display: inline-block;
+}
+
+.switch--item {
+    padding: 10px;
+    background-color: #ffffff;
+    color: #7a2518;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.switch--item.selected {
+    background-color: #7a2519;
+    color: #ffffff;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+<script type="text/javascript">
+function addBlockSwitches() {
+    $('.primary').each(function() {
+        primary = $(this);
+        createSwitchItem(primary, createBlockSwitch(primary)).item.addClass("selected");
+        primary.children('.title').remove();
+    });
+    $('.secondary').each(function(idx, node) {
+        secondary = $(node);
+        primary = findPrimary(secondary);
+        switchItem = createSwitchItem(secondary, primary.children('.switch'));
+        switchItem.content.addClass('hidden');
+        findPrimary(secondary).append(switchItem.content);
+        secondary.remove();
+    });
+}
+
+function createBlockSwitch(primary) {
+    blockSwitch = $('<div class="switch"></div>');
+    primary.prepend(blockSwitch);
+    return blockSwitch;
+}
+
+function findPrimary(secondary) {
+    candidate = secondary.prev();
+    while (!candidate.is('.primary')) {
+        candidate = candidate.prev();
+    }
+    return candidate;
+}
+
+function createSwitchItem(block, blockSwitch) {
+    blockName = block.children('.title').text();
+    content = block.children('.content').first().append(block.next('.colist'));
+    item = $('<div class="switch--item">' + blockName + '</div>');
+    item.on('click', '', content, function(e) {
+        $(this).addClass('selected');
+        $(this).siblings().removeClass('selected');
+        e.data.siblings('.content').addClass('hidden');
+        e.data.removeClass('hidden');
+    });
+    blockSwitch.append(item);
+    return {'item': item, 'content': content};
+}
+
+$(addBlockSwitches);
+
+</script>
+
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Micronaut integration for Segment</h1>
+<div class="details">
+<span id="author" class="author">Vladimir Orany</span><br>
+<span id="revnumber">version 1.0.0</span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_installation_">2. Installation</a></li>
+<li><a href="#_configuration">3. Configuration</a></li>
+<li><a href="#_usage">4. Usage</a>
+<ul class="sectlevel2">
+<li><a href="#_segment_service">4.1. Segment Service</a>
+<ul class="sectlevel3">
+<li><a href="#_creating_aliases">4.1.1. Creating Aliases</a></li>
+<li><a href="#_group_association">4.1.2. Group Association</a></li>
+<li><a href="#_identification">4.1.3. Identification</a></li>
+<li><a href="#_page_views">4.1.4. Page Views</a></li>
+<li><a href="#_screen_views">4.1.5. Screen Views</a></li>
+<li><a href="#_tracking_events">4.1.6. Tracking Events</a></li>
+</ul>
+</li>
+<li><a href="#_customization">4.2. Customization</a>
+<ul class="sectlevel3">
+<li><a href="#_message_transformation">4.2.1. Message Transformation</a></li>
+<li><a href="#_message_interceptors">4.2.2. Message Interceptors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_bugs">5. Bugs</a></li>
+<li><a href="#_links">6. Links</a></li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Micronaut Segment</strong> library allows you to integrate <a href="http://segment.com">Segment</a> into your <a href="https://micronaut.io">Micronaut</a> or <a href="https://grails.org">Grails</a> applications.</p>
+</div>
+<div class="paragraph">
+<p><a href="http://segment.com">Segment</a> lets you send your analytics data to any service you want, without having to integrate with each one individually.</p>
+</div>
+<div class="paragraph">
+<p>The library provides the following beans:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>Analytics</code> - official <a href="https://segment.com/docs/libraries/java/">Segment Analytics for Java library</a> analytics services</p>
+</li>
+<li>
+<p><code>SegmentService</code> - A server side service client to call <a href="https://segment.com/docs/libraries/http/">Segment APIs</a>, which is a wrapper around the official <a href="https://segment.com/docs/libraries/java/">Segment Analytics for Java library</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_installation_"><a class="anchor" href="#_installation_"></a>2. Installation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Micronaut Segment is available in the Maven Central repository.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Gradle</div>
+<div class="content">
+<pre class="prettyprint highlight"><code>api 'com.agorapulse:micronaut-segment:1.0.0'</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Maven</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="xml">&lt;dependency&gt;
+    &lt;groupId&gt;com.agorapulse&lt;/groupId&gt;
+    &lt;artifactId&gt;micronaut-segment&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_configuration"><a class="anchor" href="#_configuration"></a>3. Configuration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You need to provide <code>segment.api-key</code> configuration property to send information to Segment.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="yaml">segment:
+    api-key: some-key                                                                   <i class="conum" data-value="1"></i><b>(1)</b>
+    options:                                                                            <i class="conum" data-value="2"></i><b>(2)</b>
+      language: fr</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Segment API key is required if you want to send records to Segment but can be ignored in the development environment</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>The legacy default options <code>id</code>, <code>language</code>, <code>user-agent</code> or <code>intercom</code>, use <a href="#_message_transformation">Message Transformation</a> instead</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You can rely on <code>SegmentService</code> bean being always present but if the API key is missing then no-op implementation is provided.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_usage"><a class="anchor" href="#_usage"></a>4. Usage</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_segment_service"><a class="anchor" href="#_segment_service"></a>4.1. Segment Service</h3>
+<div class="paragraph">
+<p>You can inject <code>SegmentService</code> into your beans in order to call <a href="https://segment.com/docs/libraries/">Segment APIs</a>.
+The bean is always present but no-op implementation is injected when the Segment API key is missing in the configuration.</p>
+</div>
+<div class="paragraph">
+<p>Contrary to the native <code>Analytics</code> builder methods, all the methods in the <code>SegmentService</code> accepts maps with <code>null</code> values
+or <code>null</code> values in general. <code>null</code> arguments are ignored and maps containing <code>null</code> values are cleaned up.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">@Singleton
+public class MyService {
+
+    private final SegmentService segmentService;
+
+    public MyService(SegmentService segmentService) {
+        this.segmentService = segmentService;
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">@Singleton
+class MyService {
+
+    private final SegmentService segmentService
+
+    MyService(SegmentService segmentService) {
+        this.segmentService = segmentService
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_creating_aliases"><a class="anchor" href="#_creating_aliases"></a>4.1.1. Creating Aliases</h4>
+<div class="paragraph">
+<p>You can alias existing user to another ID.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://segment.com/docs/connections/sources/catalog/libraries/server/java/#alias">documentation</a> for the further information.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">service.alias(PREVIOUS_ID, USER_ID);</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">service.alias(PREVIOUS_ID, USER_ID)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_group_association"><a class="anchor" href="#_group_association"></a>4.1.2. Group Association</h4>
+<div class="paragraph">
+<p>You can associate a user with a group, including advanced properties.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://segment.com/docs/connections/sources/catalog/libraries/server/java/#group">documentation</a> for the further information.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">service.group(USER_ID, GROUP_ID, b -&gt; b
+    .traits("category", CATEGORY)
+    .traits("section", SECTION)
+    .traits("nullable", null)
+    .timestamp(now)
+    .anonymousId(ANONYMOUS_ID)
+    .messageId(MESSAGE_ID)
+    .integrationOptions("Google Analytics", "clientId", GOOGLE_ANALYTICS_ID)
+    .enableIntegration("Something Enabled", true)
+    .enableIntegration("Something Disabled", false)
+    .context("ip", IP_ADDRESS)
+    .context("language", LANGUAGE)
+    .context("userAgent", USER_AGENT)
+    .context("Intercom", INTERCOM)
+    .context("nullable", null)
+);</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">service.group(USER_ID, GROUP_ID) {
+    traits(
+        category: CATEGORY,
+        section : SECTION,
+        nullable: null
+    )
+
+    timestamp INSTANT_NOW
+
+    anonymousId ANONYMOUS_ID
+
+    integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
+
+    enableIntegration 'Something Enabled', true
+    enableIntegration 'Something Disabled', false
+
+    context(
+        ip: IP_ADDRESS,
+        language: LANGUAGE,
+        userAgent: USER_AGENT,
+        Intercom: INTERCOM,
+        nullable: null
+    )
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_identification"><a class="anchor" href="#_identification"></a>4.1.3. Identification</h4>
+<div class="paragraph">
+<p>You can identify users with their traits.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://segment.com/docs/connections/sources/catalog/libraries/server/java/#identify">documentation</a> for the further information.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">service.identify(USER_ID, b -&gt; b
+    .traits("category", CATEGORY)
+    .traits("nullable", null)
+    .timestamp(now)
+    .anonymousId(ANONYMOUS_ID)
+    .messageId(MESSAGE_ID)
+    .integrationOptions("Google Analytics", "clientId", GOOGLE_ANALYTICS_ID)
+    .enableIntegration("Something Enabled", true)
+    .enableIntegration("Something Disabled", false)
+    .context("ip", IP_ADDRESS)
+    .context("language", LANGUAGE)
+    .context("userAgent", USER_AGENT)
+    .context("Intercom", INTERCOM)
+    .context("nullable", null)
+);</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">service.identify(USER_ID) {
+    traits(
+        category: CATEGORY,
+        nullable: null
+    )
+
+    timestamp INSTANT_NOW
+
+    anonymousId ANONYMOUS_ID
+
+    integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
+
+    enableIntegration 'Something Enabled', true
+    enableIntegration 'Something Disabled', false
+
+    context(
+        ip: IP_ADDRESS,
+        language: LANGUAGE,
+        userAgent: USER_AGENT,
+        Intercom: INTERCOM,
+        nullable: null
+    )
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_page_views"><a class="anchor" href="#_page_views"></a>4.1.4. Page Views</h4>
+<div class="paragraph">
+<p>You can record page view by the user with additional properties.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://segment.com/docs/connections/sources/catalog/libraries/server/java/#page">documentation</a> for the further information.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">service.page(USER_ID, NAME, b -&gt; b
+    .properties("category", CATEGORY)
+    .properties("section", SECTION)
+    .properties("nullable", null)
+    .timestamp(now)
+    .anonymousId(ANONYMOUS_ID)
+    .messageId(MESSAGE_ID)
+    .integrationOptions("Google Analytics", "clientId", GOOGLE_ANALYTICS_ID)
+    .enableIntegration("Something Enabled", true)
+    .enableIntegration("Something Disabled", false)
+    .context("ip", IP_ADDRESS)
+    .context("language", LANGUAGE)
+    .context("userAgent", USER_AGENT)
+    .context("Intercom", INTERCOM)
+    .context("nullable", null)
+);</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">service.page(USER_ID, NAME) {
+    properties(
+        category: CATEGORY,
+        section: SECTION,
+        nullable: null
+    )
+
+    timestamp INSTANT_NOW
+
+    anonymousId ANONYMOUS_ID
+
+    integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
+
+    enableIntegration 'Something Enabled', true
+    enableIntegration 'Something Disabled', false
+
+    context(
+        ip: IP_ADDRESS,
+        language: LANGUAGE,
+        userAgent: USER_AGENT,
+        Intercom: INTERCOM,
+        nullable: null
+    )
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_screen_views"><a class="anchor" href="#_screen_views"></a>4.1.5. Screen Views</h4>
+<div class="paragraph">
+<p>You can record screen view by the user with additional properties.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://segment.com/docs/connections/sources/catalog/libraries/server/java/#screen">documentation</a> for the further information.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">service.screen(USER_ID, NAME, b -&gt; b
+    .properties("category", CATEGORY)
+    .properties("section", SECTION)
+    .properties("nullable", null)
+    .timestamp(now)
+    .anonymousId(ANONYMOUS_ID)
+    .messageId(MESSAGE_ID)
+    .integrationOptions("Google Analytics", "clientId", GOOGLE_ANALYTICS_ID)
+    .enableIntegration("Something Enabled", true)
+    .enableIntegration("Something Disabled", false)
+    .context("ip", IP_ADDRESS)
+    .context("language", LANGUAGE)
+    .context("userAgent", USER_AGENT)
+    .context("Intercom", INTERCOM)
+    .context("nullable", null)
+);</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">service.screen(USER_ID, NAME) {
+    properties(
+        category: CATEGORY,
+        section: SECTION,
+        nullable: null
+    )
+
+    timestamp INSTANT_NOW
+
+    anonymousId ANONYMOUS_ID
+
+    integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
+
+    enableIntegration 'Something Enabled', true
+    enableIntegration 'Something Disabled', false
+
+    context(
+        ip: IP_ADDRESS,
+        language: LANGUAGE,
+        userAgent: USER_AGENT,
+        Intercom: INTERCOM,
+        nullable: null
+    )
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_tracking_events"><a class="anchor" href="#_tracking_events"></a>4.1.6. Tracking Events</h4>
+<div class="paragraph">
+<p>You can track user events with additional properties.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://segment.com/docs/connections/sources/catalog/libraries/server/java/#track">documentation</a> for the further information.</p>
+</div>
+<div class="listingblock primary">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">service.track(USER_ID, EVENT, b -&gt; b
+    .properties("category", CATEGORY)
+    .properties("section", SECTION)
+    .properties("nullable", null)
+    .timestamp(now)
+    .anonymousId(ANONYMOUS_ID)
+    .messageId(MESSAGE_ID)
+    .integrationOptions("Google Analytics", "clientId", GOOGLE_ANALYTICS_ID)
+    .enableIntegration("Something Enabled", true)
+    .enableIntegration("Something Disabled", false)
+    .context("ip", IP_ADDRESS)
+    .context("language", LANGUAGE)
+    .context("userAgent", USER_AGENT)
+    .context("Intercom", INTERCOM)
+    .context("nullable", null)
+);</code></pre>
+</div>
+</div>
+<div class="listingblock secondary">
+<div class="title">Groovy</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="groovy">service.track(USER_ID, EVENT) {
+    properties(
+        category: CATEGORY,
+        section : SECTION,
+        nullable: null
+    )
+
+    timestamp INSTANT_NOW
+
+    anonymousId ANONYMOUS_ID
+
+    integrationOptions 'Google Analytics', [clientId: GOOGLE_ANALYTICS_ID]
+
+    enableIntegration 'Something Enabled', true
+    enableIntegration 'Something Disabled', false
+
+    context(
+        ip: IP_ADDRESS,
+        language: LANGUAGE,
+        userAgent: USER_AGENT,
+        Intercom: INTERCOM,
+        nullable: null
+    )
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_customization"><a class="anchor" href="#_customization"></a>4.2. Customization</h3>
+<div class="paragraph">
+<p>You can declare message transformers and interceptors. They are only taken into account when the real
+implementation is used. They are ignored when no-op implementation is used.</p>
+</div>
+<div class="sect3">
+<h4 id="_message_transformation"><a class="anchor" href="#_message_transformation"></a>4.2.1. Message Transformation</h4>
+<div class="paragraph">
+<p>You can declare <code>MessageTransformer</code> beans to change the payload before sending. Here is the example of transformer which adds default value if not present:</p>
+</div>
+<div class="listingblock">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">import com.segment.analytics.MessageTransformer;
+import com.segment.analytics.messages.Message;
+import com.segment.analytics.messages.MessageBuilder;
+
+import javax.inject.Singleton;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Sets the default context value if missing.
+ */
+@Singleton
+public class DefaultContextMessageTransformer implements MessageTransformer {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean transform(MessageBuilder builder) {
+        Message message = builder.build();
+
+        Map&lt;String, ?&gt; context = message.context();
+
+        if (context == null) {
+            builder.context(Collections.singletonMap("FromTransformer", "Value"));
+            return true;
+        }
+
+        if (!context.containsKey("FromTransformer")) {
+            Map&lt;String, Object&gt; newContext = new LinkedHashMap&lt;&gt;(context);
+            newContext.put("FromTransformer", "Value");
+            builder.context(newContext);
+        }
+
+        return true;
+
+
+    }
+
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_message_interceptors"><a class="anchor" href="#_message_interceptors"></a>4.2.2. Message Interceptors</h4>
+<div class="paragraph">
+<p>You can declare <code>MessageInterceptor</code> beans to intercept sending of the messages. Here is an example of the interceptor which holds the latest message sent:</p>
+</div>
+<div class="listingblock">
+<div class="title">Java</div>
+<div class="content">
+<pre class="prettyprint highlight"><code data-lang="java">import com.segment.analytics.MessageInterceptor;
+import com.segment.analytics.messages.Message;
+
+import javax.inject.Singleton;
+
+/**
+ * Keeps the reference to the last message.
+ */
+@Singleton
+public class LastMessageHolder implements MessageInterceptor {
+
+    private Message lastMessage;
+
+    public Message getLastMessage() {
+        return lastMessage;
+    }
+
+    @Override
+    public Message intercept(Message message) {
+        this.lastMessage = message;
+        return message;
+    }
+
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bugs"><a class="anchor" href="#_bugs"></a>5. Bugs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To report any bug, please, use the project <a href="http://github.com/agorapulse/micronaut-segment/issues">issues section on GitHub</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_links"><a class="anchor" href="#_links"></a>6. Links</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="api/index.html" target="_blank" rel="noopener">Javadoc</a></p>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.0.0<br>
+Last updated 2021-07-14 13:06:58 UTC
+</div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/run_prettify.min.js"></script>
+</body>
+</html>

@@ -51,7 +51,7 @@ class SegmentFactorySpec extends Specification {
             !holder.lastMessage
 
         when:
-            analytics.buildMessage(AliasMessage.builder('previous').userId('new'))
+            analytics.enqueue(AliasMessage.builder('previous').userId('new'))
 
         then:
             holder.lastMessage

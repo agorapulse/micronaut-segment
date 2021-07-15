@@ -118,10 +118,13 @@
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>         }
 <a class="jxr_linenumber" name="L111" href="#L111">111</a> 
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>         <strong class="jxr_keyword">if</strong> (!integrationsOptions.isEmpty()) {
-<a class="jxr_linenumber" name="L113" href="#L113">113</a>             integrationsOptions.forEach((key, value) -&gt; builder.integrationOptions(key, SafeMap.safe(value)));
-<a class="jxr_linenumber" name="L114" href="#L114">114</a>         }
-<a class="jxr_linenumber" name="L115" href="#L115">115</a>     }
-<a class="jxr_linenumber" name="L116" href="#L116">116</a> }
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>             integrationsOptions.forEach((key, value) -&gt; {
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>                 Map&lt;String, Object&gt; safe = SafeMap.safe((Map&lt;String, Object&gt;) value);
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>                 builder.integrationOptions(key, safe);
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>             });
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>         }
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>     }
+<a class="jxr_linenumber" name="L119" href="#L119">119</a> }
 </pre>
 <hr/>
 <div id="footer"></div>

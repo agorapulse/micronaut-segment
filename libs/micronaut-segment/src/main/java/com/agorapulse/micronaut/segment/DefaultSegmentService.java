@@ -19,14 +19,10 @@ package com.agorapulse.micronaut.segment;
 
 import com.agorapulse.micronaut.segment.builder.*;
 import com.segment.analytics.Analytics;
-import io.micronaut.context.annotation.Requires;
 
-import javax.inject.Singleton;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Singleton
-@Requires(beans = com.segment.analytics.Analytics.class)
 public class DefaultSegmentService implements SegmentService {
 
 

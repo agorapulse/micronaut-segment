@@ -20,16 +20,11 @@ package com.agorapulse.micronaut.segment;
 import com.agorapulse.micronaut.segment.builder.MessageBuilderWithProperties;
 import com.agorapulse.micronaut.segment.builder.MessageBuilderWithTraits;
 import com.agorapulse.micronaut.segment.builder.SimpleMessageBuilder;
-import com.segment.analytics.Analytics;
-import io.micronaut.context.annotation.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
 import java.util.function.Consumer;
 
-@Singleton
-@Requires(missingBeans = {Analytics.class})
 public class NoOpSegmentService implements SegmentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NoOpSegmentService.class);

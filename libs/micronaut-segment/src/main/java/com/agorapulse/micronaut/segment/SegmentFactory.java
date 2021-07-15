@@ -24,6 +24,7 @@ import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 
+import javax.annotation.Nullable;
 import javax.inject.Singleton;
 import java.util.List;
 
@@ -42,6 +43,15 @@ public class SegmentFactory {
         messageInterceptor.forEach(builder::messageInterceptor);
         messageTransformers.forEach(builder::messageTransformer);
         return builder.build();
+    }
+
+    @Bean
+    @Singleton
+    public SegmentService segmentService(@Nullable Analytics analytics, @Nullable  SegmentConfiguration configuration) {
+        if (analytics != null) {
+            return new DefaultSegmentService(analytics, configuration);
+        }
+        return new NoOpSegmentService();
     }
 
 }

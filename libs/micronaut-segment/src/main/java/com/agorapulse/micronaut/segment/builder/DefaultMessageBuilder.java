@@ -110,7 +110,10 @@ public abstract class DefaultMessageBuilder<V extends MessageBuilder<V>> impleme
         }
 
         if (!integrationsOptions.isEmpty()) {
-            integrationsOptions.forEach((key, value) -> builder.integrationOptions(key, SafeMap.safe(value)));
+            integrationsOptions.forEach((key, value) -> {
+                Map<String, Object> safe = SafeMap.safe((Map<String, Object>) value);
+                builder.integrationOptions(key, safe);
+            });
         }
     }
 }

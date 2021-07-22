@@ -19,24 +19,43 @@ package com.agorapulse.micronaut.segment;
 
 import com.agorapulse.micronaut.segment.builder.*;
 import com.segment.analytics.Analytics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class DefaultSegmentService implements SegmentService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSegmentService.class);
 
     private final Analytics analytics;
     private final SegmentConfiguration config;
+    private final ExecutorService segmentNetworkExecutor;
+    private final boolean blocking;
 
-    public DefaultSegmentService(Analytics analytics, SegmentConfiguration config) {
+    public DefaultSegmentService(Analytics analytics, SegmentConfiguration config, ExecutorService segmentNetworkExecutor, boolean blocking) {
         this.analytics = analytics;
         this.config = config;
+        this.segmentNetworkExecutor = segmentNetworkExecutor;
+        this.blocking = blocking;
     }
 
     @Override
     public void flush() {
         analytics.flush();
+        if (blocking) {
+            try {
+                LOGGER.debug("Waiting for messages being flushed");
+                // give some time to enqueue the batch
+                Thread.sleep(10);
+                segmentNetworkExecutor.submit(() -> LOGGER.trace("Wating task has been executed")).get(10, TimeUnit.SECONDS);
+                LOGGER.debug("Messages should be flushed now!");
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                throw new IllegalStateException("Exception while waiting for flushing to happen");
+            }
+        }
     }
 
     @Override

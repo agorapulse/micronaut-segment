@@ -17,41 +17,104 @@
  */
 package com.agorapulse.micronaut.segment;
 
-import com.segment.analytics.Analytics;
-import com.segment.analytics.MessageInterceptor;
-import com.segment.analytics.MessageTransformer;
+import com.agorapulse.micronaut.segment.util.Slf4jSegmentLog;
+import com.jakewharton.retrofit.Ok3Client;
+import com.segment.analytics.*;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.context.env.Environment;
+import okhttp3.OkHttpClient;
+import retrofit.client.Client;
 
 import javax.annotation.Nullable;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.Thread.MIN_PRIORITY;
 
 @Factory
 public class SegmentFactory {
 
-    @Bean
+    private static final String THREAD_NAME = "Analytics";
+
+    @Bean(preDestroy = "shutdown")
     @Singleton
     @Requires(beans = SegmentConfiguration.class)
     public Analytics analytics(
         SegmentConfiguration configuration,
         List<MessageInterceptor> messageInterceptor,
-        List<MessageTransformer> messageTransformers
+        List<MessageTransformer> messageTransformers,
+        List<Callback> callbacks,
+        @Named("segment") Client client,
+        @Named("segment") ThreadFactory threadFactory,
+        @Named("segmentNetworkExecutor") ExecutorService segmentNetworkExecutor
     ) {
         Analytics.Builder builder = Analytics.builder(configuration.getApiKey());
+
         messageInterceptor.forEach(builder::messageInterceptor);
+
         messageTransformers.forEach(builder::messageTransformer);
+
+        callbacks.forEach(builder::callback);
+
+        builder.log(new Slf4jSegmentLog())
+            .threadFactory(threadFactory)
+            .networkExecutor(segmentNetworkExecutor)
+            .client(client);
+
         return builder.build();
     }
 
     @Bean
     @Singleton
-    public SegmentService segmentService(@Nullable Analytics analytics, @Nullable  SegmentConfiguration configuration) {
+    public SegmentService segmentService(
+        @Nullable Analytics analytics,
+        @Nullable SegmentConfiguration configuration,
+        @Nullable @Named("segmentNetworkExecutor") ExecutorService segmentNetworkExecutor,
+        Environment environment
+    ) {
         if (analytics != null) {
-            return new DefaultSegmentService(analytics, configuration);
+            return new DefaultSegmentService(analytics, configuration, segmentNetworkExecutor, environment.getActiveNames().contains(Environment.FUNCTION));
         }
         return new NoOpSegmentService();
+    }
+
+    @Bean
+    @Singleton
+    @Named("segment")
+    @Requires(beans = SegmentConfiguration.class)
+    Client defaultClient() {
+        OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .build();
+        return new Ok3Client(client);
+    }
+
+    @Bean
+    @Singleton
+    @Named("segmentNetworkExecutor")
+    @Requires(beans = SegmentConfiguration.class)
+    ExecutorService defaultNetworkExecutor(@Named("segment") ThreadFactory threadFactory) {
+        return Executors.newSingleThreadExecutor(threadFactory);
+    }
+
+    @Bean
+    @Singleton
+    @Named("segment")
+    @Requires(beans = SegmentConfiguration.class)
+    ThreadFactory defaultThreadFactory() {
+        return r -> new Thread(() -> {
+            Thread.currentThread().setPriority(MIN_PRIORITY);
+            r.run();
+        }, THREAD_NAME);
     }
 
 }

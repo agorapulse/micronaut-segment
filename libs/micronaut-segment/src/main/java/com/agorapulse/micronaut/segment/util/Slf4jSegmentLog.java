@@ -30,13 +30,13 @@ public class Slf4jSegmentLog implements Log {
     public void print(Level level, String format, Object... args) {
         switch (level) {
             case VERBOSE:
-                LOGGER.trace(format, args);
+                LOGGER.trace(String.format(format, args));
                 break;
             case DEBUG:
-                LOGGER.debug(format, args);
+                LOGGER.debug(String.format(format, args));
                 break;
             case ERROR:
-                LOGGER.error(format, args);
+                LOGGER.error(String.format(format, args));
                 break;
         }
     }
@@ -45,16 +45,13 @@ public class Slf4jSegmentLog implements Log {
     public void print(Level level, Throwable error, String format, Object... args) {
         switch (level) {
             case VERBOSE:
-                LOGGER.trace(format, args);
-                LOGGER.trace("", error);
+                LOGGER.trace(String.format(format, args), error);
                 break;
             case DEBUG:
-                LOGGER.debug(format, args);
-                LOGGER.debug("", error);
+                LOGGER.debug(String.format(format, args), error);
                 break;
             case ERROR:
-                LOGGER.error(format, args);
-                LOGGER.error("", error);
+                LOGGER.error(String.format(format, args), error);
                 break;
         }
     }

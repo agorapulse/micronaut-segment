@@ -92,7 +92,7 @@ $(addBlockSwitches);
 <h1>Micronaut integration for Segment</h1>
 <div class="details">
 <span id="author" class="author">Vladimir Orany</span><br>
-<span id="revnumber">version 1.0.4.1</span>
+<span id="revnumber">version 1.1.0-micronaut-3.0</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
@@ -159,7 +159,7 @@ $(addBlockSwitches);
 <div class="listingblock primary">
 <div class="title">Gradle</div>
 <div class="content">
-<pre class="prettyprint highlight"><code>api 'com.agorapulse:micronaut-segment:1.0.4.1'</code></pre>
+<pre class="prettyprint highlight"><code>api 'com.agorapulse:micronaut-segment:1.1.0-micronaut-3.0'</code></pre>
 </div>
 </div>
 <div class="listingblock secondary">
@@ -168,7 +168,7 @@ $(addBlockSwitches);
 <pre class="prettyprint highlight"><code data-lang="xml">&lt;dependency&gt;
     &lt;groupId&gt;com.agorapulse&lt;/groupId&gt;
     &lt;artifactId&gt;micronaut-segment&lt;/artifactId&gt;
-    &lt;version&gt;1.0.4.1&lt;/version&gt;
+    &lt;version&gt;1.1.0-micronaut-3.0&lt;/version&gt;
 &lt;/dependency&gt;</code></pre>
 </div>
 </div>
@@ -581,7 +581,7 @@ implementation is used. They are ignored when no-op implementation is used.</p>
 import com.segment.analytics.messages.Message;
 import com.segment.analytics.messages.MessageBuilder;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -630,7 +630,7 @@ public class DefaultContextMessageTransformer implements MessageTransformer {
 <pre class="prettyprint highlight"><code data-lang="java">import com.segment.analytics.MessageInterceptor;
 import com.segment.analytics.messages.Message;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Keeps the reference to the last message.
@@ -676,8 +676,8 @@ public class LastMessageHolder implements MessageInterceptor {
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0.4.1<br>
-Last updated 2021-07-22 14:03:59 UTC
+Version 1.1.0-micronaut-3.0<br>
+Last updated 2022-02-01 12:21:36 UTC
 </div>
 </div>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">

@@ -15,22 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.agorapulse.micronaut.segment.builder;
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'groovy'
+}
 
-import java.util.Map;
+repositories {
+    mavenCentral()
+    maven { url 'https://plugins.gradle.org/m2/' }
+}
 
-public interface MessageBuilderWithProperties extends MessageBuilder<MessageBuilderWithProperties> {
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
 
-    default MessageBuilderWithProperties properties(Map<String, ?> properties) {
-        if (properties == null) {
-            return self();
-        }
-
-        properties.forEach(this::properties);
-
-        return self();
-    }
-
-    MessageBuilderWithProperties properties(String key, Object value);
-
+    implementation 'io.spring.gradle:dependency-management-plugin:1.0.5.RELEASE'
+    implementation 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
 }

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020-2021 Agorapulse.
+ * Copyright 2020-2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ class SegmentServiceTest {
         properties.put("segment.options.language", DEFAULT_LANGUAGE);
         properties.put("segment.options.user-agent", DEFAULT_USER_AGENT);
 
-        context = ApplicationContext.build(properties).build();
+        context = ApplicationContext.builder(properties).build();
         context.registerSingleton(Analytics.class, analytics);
         context.start();
 

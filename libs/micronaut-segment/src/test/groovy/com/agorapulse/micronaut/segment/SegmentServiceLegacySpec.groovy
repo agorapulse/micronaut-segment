@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020-2021 Agorapulse.
+ * Copyright 2020-2022 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ class SegmentServiceLegacySpec extends Specification {
 
     void setup() {
         context = ApplicationContext
-                .build('segment.api-key': API_KEY)
+                .builder('segment.api-key': API_KEY)
                 .build()
 
         context.registerSingleton(Analytics, analytics)

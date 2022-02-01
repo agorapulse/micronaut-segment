@@ -91,7 +91,7 @@ class SegmentServiceTest {
         properties.put("segment.options.language", DEFAULT_LANGUAGE);
         properties.put("segment.options.user-agent", DEFAULT_USER_AGENT);
 
-        context = ApplicationContext.build(properties).build();
+        context = ApplicationContext.builder(properties).build();
         context.registerSingleton(Analytics.class, analytics);
         context.start();
 

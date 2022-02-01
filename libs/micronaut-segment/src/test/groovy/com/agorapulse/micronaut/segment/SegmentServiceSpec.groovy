@@ -74,7 +74,7 @@ class SegmentServiceSpec extends Specification {
 
     void setupSpec() {
         context = ApplicationContext
-                .build('segment.api-key': API_KEY)
+                .builder('segment.api-key': API_KEY)
                 .build()
 
         context.registerSingleton(Analytics, analytics)

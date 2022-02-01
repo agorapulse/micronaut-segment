@@ -69,7 +69,7 @@ class SegmentServiceLegacySpec extends Specification {
 
     void setup() {
         context = ApplicationContext
-                .build('segment.api-key': API_KEY)
+                .builder('segment.api-key': API_KEY)
                 .build()
 
         context.registerSingleton(Analytics, analytics)

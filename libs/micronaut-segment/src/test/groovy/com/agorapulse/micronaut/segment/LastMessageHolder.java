@@ -21,7 +21,7 @@ package com.agorapulse.micronaut.segment;
 import com.segment.analytics.MessageInterceptor;
 import com.segment.analytics.messages.Message;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 /**
  * Keeps the reference to the last message.

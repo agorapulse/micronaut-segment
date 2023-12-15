@@ -27,9 +27,9 @@ import io.micronaut.context.env.Environment;
 import okhttp3.OkHttpClient;
 import retrofit.client.Client;
 
-import javax.annotation.Nullable;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import io.micronaut.core.annotation.Nullable;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

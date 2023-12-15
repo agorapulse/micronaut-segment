@@ -18,4 +18,6 @@
 dependencies {
     api "com.segment.analytics.java:analytics:$segmentLibrariesVersion"
     api "space.jasan:groovy-closure-support:$groovySupportVersion"
+
+    testImplementation 'org.yaml:snakeyaml'
 }

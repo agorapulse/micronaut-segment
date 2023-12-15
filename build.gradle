@@ -99,13 +99,19 @@ config {
     }
 
     docs {
-        groovydoc {
+        javadoc {
+            autoLinks {
+                enabled = false
+            }
             aggregate {
                 enabled = false
             }
         }
-        sourceHtml {
+        groovydoc {
             enabled = false
+            aggregate {
+                enabled = false
+            }
         }
     }
 
@@ -134,30 +140,20 @@ allprojects {
 }
 gradleProjects {
     subprojects {
-        dirs(['examples', 'libs']) {
-            apply plugin: 'micronaut-compatibility'
+        dirs(['libs']) {
+            micronaut {
+                testRuntime 'spock'
+                processing {
+                    incremental false
+                }
+            }
 
             dependencies {
-                annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
-                annotationProcessor "io.micronaut:micronaut-inject-java"
-                annotationProcessor "io.micronaut:micronaut-validation"
+                annotationProcessor "io.micronaut.validation:micronaut-validation-processor"
 
-                api platform("io.micronaut:micronaut-bom:$micronautVersion")
-                api "io.micronaut:micronaut-validation"
+                api "io.micronaut.validation:micronaut-validation"
 
                 compileOnly "io.micronaut:micronaut-inject-groovy"
-
-                testAnnotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
-                testAnnotationProcessor "io.micronaut:micronaut-inject-java"
-
-                testImplementation("org.spockframework:spock-core:$spockVersion") {
-                    exclude group: "org.codehaus.groovy", module: "groovy-all"
-                }
-
-                testImplementation "io.micronaut.test:micronaut-test-spock"
-                testImplementation "io.micronaut:micronaut-inject-groovy"
-                testImplementation 'net.bytebuddy:byte-buddy:1.10.1'
-                testImplementation 'org.objenesis:objenesis:3.0.1'
 
                 testImplementation "org.junit.jupiter:junit-jupiter-api"
                 testImplementation "io.micronaut.test:micronaut-test-junit5"
@@ -194,11 +190,6 @@ gradleProjects {
             clean.dependsOn cleanOut
         }
     }
-}
-subprojects { subproject ->
-    if (subproject.name == 'guide') return
-
-
 }
 
 check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')

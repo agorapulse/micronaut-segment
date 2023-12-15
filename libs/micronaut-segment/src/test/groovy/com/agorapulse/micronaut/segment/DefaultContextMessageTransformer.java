@@ -22,7 +22,7 @@ import com.segment.analytics.MessageTransformer;
 import com.segment.analytics.messages.Message;
 import com.segment.analytics.messages.MessageBuilder;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;

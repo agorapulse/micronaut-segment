@@ -18,14 +18,16 @@
 package com.agorapulse.micronaut.segment;
 
 import com.agorapulse.micronaut.segment.util.Slf4jSegmentLog;
-import com.jakewharton.retrofit.Ok3Client;
-import com.segment.analytics.*;
+import com.segment.analytics.Analytics;
+import com.segment.analytics.Callback;
+import com.segment.analytics.MessageInterceptor;
+import com.segment.analytics.MessageTransformer;
 import io.micronaut.context.annotation.Bean;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.env.Environment;
 import okhttp3.OkHttpClient;
-import retrofit.client.Client;
+
 
 import io.micronaut.core.annotation.Nullable;
 import jakarta.inject.Named;
@@ -51,7 +53,7 @@ public class SegmentFactory {
         List<MessageInterceptor> messageInterceptor,
         List<MessageTransformer> messageTransformers,
         List<Callback> callbacks,
-        @Named("segment") Client client,
+        @Named("segment") OkHttpClient client,
         @Named("segment") ThreadFactory threadFactory,
         @Named("segmentNetworkExecutor") ExecutorService segmentNetworkExecutor
     ) {
@@ -89,13 +91,12 @@ public class SegmentFactory {
     @Singleton
     @Named("segment")
     @Requires(beans = SegmentConfiguration.class)
-    Client defaultClient() {
-        OkHttpClient client = new OkHttpClient.Builder()
+    OkHttpClient defaultClient() {
+        return new OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
             .build();
-        return new Ok3Client(client);
     }
 
     @Bean

@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  *
- * Copyright 2020-2022 Agorapulse.
+ * Copyright 2020-2026 Agorapulse.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,180 +16,28 @@
  * limitations under the License.
  */
 plugins {
-    id 'org.kordamp.gradle.groovy-project'
-    id 'org.kordamp.gradle.checkstyle'
-    id 'org.kordamp.gradle.codenarc'
-    id 'org.kordamp.gradle.coveralls'
-    id 'io.github.gradle-nexus.publish-plugin'
-}
-
-if (!project.hasProperty('ossrhUsername'))      ext.ossrhUsername       = System.getenv('SONATYPE_USERNAME') ?: '**UNDEFINED**'
-if (!project.hasProperty('ossrhPassword'))      ext.ossrhPassword       = System.getenv('SONATYPE_PASSWORD') ?: '**UNDEFINED**'
-if (!project.hasProperty('signingKeyId'))       ext.signingKeyId        = System.getenv('SIGNING_KEY_ID') ?: '**UNDEFINED**'
-if (!project.hasProperty('signingPassword'))    ext.signingPassword     = System.getenv('SIGNING_PASSWORD') ?: '**UNDEFINED**'
-if (!project.hasProperty('signingSecretKey'))   ext.signingSecretKey    = System.getenv('SIGNING_SECRET_KEY_PATH') ? rootProject.file(System.getenv('SIGNING_SECRET_KEY_PATH')).text : '**UNDEFINED**'
-
-config {
-    release = (rootProject.findProperty('release') ?: false).toBoolean()
-
-    info {
-        name        = 'Micronaut Segment'
-        vendor      = 'Agorapulse'
-        description = 'Micronaut integration for Segment'
-
-        links {
-            website      = "https://github.com/" + slug
-            issueTracker = "https://github.com/" + slug + "/issues"
-            scm          = "https://github.com/" + slug + ".git"
-        }
-
-        people {
-            person {
-                id    = 'musketyr'
-                name  = 'Vladimir Orany'
-                roles = ['developer']
-            }
-        }
-
-        repositories {
-            repository {
-                name = 'localRelease'
-                url  = "" + project.rootProject.buildDir + "/repos/local/release"
-            }
-            repository {
-                name = 'localSnapshot'
-                url  = "" + project.rootProject.buildDir + "/repos/local/snapshot"
-            }
-        }
-    }
-
-    licensing {
-        licenses {
-            license {
-                id = 'Apache-2.0'
-            }
-        }
-    }
-
-    publishing {
-        signing {
-            enabled =  true
-            keyId = signingKeyId
-            secretKey = signingSecretKey
-            password = signingPassword
-        }
-        releasesRepository  = 'localRelease'
-        snapshotsRepository = 'localSnapshot'
-    }
-
-    quality {
-        checkstyle {
-            toolVersion = '8.27'
-        }
-
-        codenarc {
-            toolVersion = '1.5'
-        }
-    }
-
-    coverage {
-        coveralls {
-            enabled = true
-        }
-    }
-
-    docs {
-        javadoc {
-            autoLinks {
-                enabled = false
-            }
-            aggregate {
-                enabled = false
-            }
-        }
-        groovydoc {
-            enabled = false
-            aggregate {
-                enabled = false
-            }
-        }
-    }
-
-}
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl = uri('https://s01.oss.sonatype.org/service/local/')
-            snapshotRepositoryUrl = uri('https://s01.oss.sonatype.org/content/repositories/snapshots/')
-            username = ossrhUsername
-            password = ossrhPassword
-        }
-    }
+    id 'com.agorapulse.gradle.aggregate-test-reports'   version "${agorapulseAggregateReportsVersion}"
+    id 'com.agorapulse.gradle.aggregate-jacoco-reports' version "${agorapulseGradlePluginsVersion}"
 }
 
 allprojects {
     repositories {
         mavenCentral()
     }
-
-    license {
-        exclude '**/*.json'
-        exclude '***.yml'
-    }
 }
-gradleProjects {
-    subprojects {
-        dirs(['libs']) {
-            micronaut {
-                testRuntime 'spock'
-                processing {
-                    incremental false
-                }
+
+subprojects {
+    plugins.withId('com.agorapulse.gradle.micronaut-library') {
+        micronaut {
+            importMicronautPlatform = true
+            testRuntime 'spock'
+            processing {
+                incremental false
             }
-
-            dependencies {
-                annotationProcessor "io.micronaut.validation:micronaut-validation-processor"
-
-                api "io.micronaut.validation:micronaut-validation"
-
-                compileOnly "io.micronaut:micronaut-inject-groovy"
-
-                testImplementation "org.junit.jupiter:junit-jupiter-api"
-                testImplementation "io.micronaut.test:micronaut-test-junit5"
-                testImplementation 'org.mockito:mockito-core:3.11.2'
-                testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-            }
-
-            test {
-                useJUnitPlatform()
-            }
-
-            // useful for Micronaut
-            tasks.withType(GroovyCompile) {
-                groovyOptions.forkOptions.jvmArgs.add('-Dgroovy.parameters=true')
-            }
-
-            // useful for Micronaut
-            tasks.withType(JavaCompile){
-                options.encoding = "UTF-8"
-                options.compilerArgs.add('-parameters')
-            }
-
-            // location independent tests (useful for stable CI builds)
-            tasks.withType(Test){
-                systemProperty 'user.timezone', 'UTC'
-                systemProperty 'user.language', 'en'
-            }
-
-            // useful for IntelliJ
-            task cleanOut(type: Delete) {
-                delete file('out')
-            }
-
-            clean.dependsOn cleanOut
         }
     }
 }
 
-check.dependsOn('aggregateCheckstyle', 'aggregateCodenarc', 'aggregateAllTestReports', 'coveralls')
+tasks.named('check') {
+    dependsOn 'aggregateTestReports', 'aggregateJacocoReports'
+}
